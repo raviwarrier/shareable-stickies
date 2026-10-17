@@ -136,8 +136,8 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
     setAttachments((prev) => [...prev, ...newFiles]);
   };
 
-  const removeAttachment = (index: number) => {
-    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  const removeAttachment = (fileName: string) => {
+    setAttachments((prev) => prev.filter((f) => f.name !== fileName));
   };
 
   const formatFileSize = (bytes: number) => {
@@ -286,7 +286,7 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
                 aria-hidden="true"
               >
                 {Array.from({ length: lineCount }).map((_, i) => (
-                  <div key={i}>{i + 1}</div>
+                  <div key={`line-${i}`}>{i + 1}</div>
                 ))}
               </div>
             )}
@@ -312,13 +312,6 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
                 className="prose prose-invert prose-base max-w-none prose-pre:bg-black/20 prose-pre:border prose-pre:border-[var(--sg-panel-border)] prose-a:text-sky-500"
                 dangerouslySetInnerHTML={{ __html: renderedMarkdown || '<p class="text-[var(--sg-text-muted)] font-mono text-sm">Markdown preview empty</p>' }}
               />
-            ) : syntax === 'html' ? (
-              <div className="rounded-md p-4 bg-black/20 border border-[var(--sg-panel-border)]">
-                <div
-                  className="overflow-auto text-[var(--sg-text)]"
-                  dangerouslySetInnerHTML={{ __html: content || '<p class="text-[var(--sg-text-muted)] font-mono text-sm">HTML preview empty</p>' }}
-                />
-              </div>
             ) : (
               <div className="font-mono text-sm md:text-base leading-7 select-text overflow-x-auto">
                 <pre className={`language-${syntax} !bg-transparent !p-0 !m-0`}>
@@ -345,11 +338,11 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
             </span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
-            {attachments.map((file, idx) => {
+            {attachments.map((file) => {
               const previewUrl = URL.createObjectURL(file);
               return (
                 <div
-                  key={idx}
+                  key={file.name}
                   className="group relative flex items-center gap-2 p-2 rounded-md solid-glass-btn text-xs font-mono overflow-hidden"
                 >
                   <img
@@ -363,7 +356,7 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
                   </div>
                   <button
                     type="button"
-                    onClick={() => removeAttachment(idx)}
+                    onClick={() => removeAttachment(file.name)}
                     className="p-1 rounded-md hover:bg-white/10 text-[var(--sg-text-muted)] hover:text-rose-500 transition cursor-pointer"
                     title="Remove attachment"
                   >

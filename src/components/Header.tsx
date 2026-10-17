@@ -242,7 +242,13 @@ export const Header: React.FC<HeaderProps> = ({
               title={`Current theme: ${theme}. Click to switch theme.`}
               aria-label={`Current theme: ${theme}. Click to switch theme.`}
             >
-              {theme === 'dark' ? <Moon className="w-4 h-4 text-slate-300" /> : theme === 'light' ? <Sun className="w-4 h-4 text-slate-700" /> : <BookOpen className="w-4 h-4 text-[#8a6842]" />}
+              {theme === 'dark' ? (
+                <Moon className="w-4 h-4 text-slate-300" />
+              ) : theme === 'light' ? (
+                <Sun className="w-4 h-4 text-slate-700" />
+              ) : (
+                <BookOpen className="w-4 h-4 text-[#8a6842]" />
+              )}
             </button>
 
             {/* @username dropdown menu */}

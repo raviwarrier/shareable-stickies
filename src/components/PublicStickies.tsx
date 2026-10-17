@@ -33,18 +33,19 @@ export const PublicStickies: React.FC<PublicStickiesProps> = ({
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-    getPublicStickiesByUsername(username)
-      .then((data) => {
+    const loadPastes = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getPublicStickiesByUsername(username);
         setPastes(data.pastes);
-      })
-      .catch((err) => {
-        setError(err.message || 'Failed to load public stickies');
-      })
-      .finally(() => {
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Failed to load public stickies');
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+    loadPastes();
   }, [username]);
 
   const handleCopyLink = async (slug: string, e: React.MouseEvent) => {
@@ -189,6 +190,9 @@ export const PublicStickies: React.FC<PublicStickiesProps> = ({
               <div
                 key={item.id}
                 onClick={() => onNavigate(`/p/${item.slug}`)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate(`/p/${item.slug}`); }}
+                role="button"
+                tabIndex={0}
                 className="group relative p-3.5 rounded-lg solid-glass-panel border hover:border-[var(--sg-btn-active-border)] transition-all flex flex-col justify-between gap-3 cursor-pointer shadow-md"
               >
                 <div>

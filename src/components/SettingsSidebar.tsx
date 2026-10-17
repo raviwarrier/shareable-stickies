@@ -320,7 +320,6 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
                     type="button"
                     onClick={() => setVisibility(key as any)}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setVisibility(key as any); }}
-                    role="button"
                     tabIndex={0}
                     className={`py-2 px-1.5 rounded-md text-center transition cursor-pointer text-xs ${
                       visibility === key
@@ -343,7 +342,7 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
 
         {/* Password to access link */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-[var(--sg-text)] flex items-center justify-between">
+          <label className="text-sm font-medium text-[var(--sg-text)] flex items-center justify-between" htmlFor="password-input">
             <span className="flex items-center gap-2">
               <Lock className="w-4 h-4 text-[var(--sg-text-muted)]" />
               Password to access link
@@ -355,6 +354,7 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
 
           <div className="flex items-center rounded-md solid-glass-input overflow-hidden">
             <input
+              id="password-input"
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}

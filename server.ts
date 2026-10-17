@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from 'express';
+﻿import express, { Request, Response, NextFunction } from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
 import multer from 'multer';
@@ -9,7 +9,7 @@ import { getStorageDriver, StoredAttachment } from './server/storage/storageDriv
 dotenv.config();
 
 // ---------------------------------------------------------------------------
-// Input Sanitization — Defense-in-depth for all form fields
+// Input Sanitization â€” Defense-in-depth for all form fields
 // (This app uses a JSON file store, not SQL, so traditional SQL injection
 //  is not possible. These helpers are added as a best-practice layer to
 //  neutralize any injection-style payloads in user-submitted text.)
@@ -23,12 +23,12 @@ function sanitizeInput(value: unknown): string {
   if (value === null || value === undefined) return '';
   if (typeof value !== 'string') return String.prototype.toString.call(value);
   return value
-    .replaceAll('\\0', '')                      // remove null bytes
+    .replaceAll(String.fromCharCode(0), '')                      // remove null bytes
     .replace(/[\x00-\x1f\x7f-\x9f]/g, '');   // remove control characters
 }
 
 /**
- * Sanitizes a username: alphanumeric, hyphens, underscores only, 3–32 chars.
+ * Sanitizes a username: alphanumeric, hyphens, underscores only, 3â€“32 chars.
  */
 function sanitizeUsername(value: unknown): string {
   const s = sanitizeInput(value);
@@ -36,7 +36,7 @@ function sanitizeUsername(value: unknown): string {
 }
 
 /**
- * Sanitizes a paste slug: alphanumeric, hyphens, underscores only, 3–64 chars.
+ * Sanitizes a paste slug: alphanumeric, hyphens, underscores only, 3â€“64 chars.
  */
 function sanitizeSlug(value: unknown): string {
   const s = sanitizeInput(value);
@@ -92,7 +92,7 @@ function isExecutable(filename: string, mimetype: string): boolean {
 // Configure multer in memory so driver can handle destination (unlimited files per paste)
 // File type and max size validation is done dynamically in the create-paste route using DB settings
 // Max file size is capped at 100MB as a hard upper bound for upload buffer safety
-const MAX_UPLOAD_BUFFER = 100 * 1024 * 1024; // 100MB hard cap for multer buffer
+const MAX_UPLOAD_BUFFER = 10 * 1024 * 1024; // 10MB hard cap for multer buffer
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -566,13 +566,13 @@ app.get('/api/admin/settings', (req: AuthenticatedRequest, res: Response) => {
     cloudinaryConfig: {
       cloudName: settings.cloudinaryConfig?.cloudName || process.env.CLOUDINARY_CLOUD_NAME || '',
       apiKey: settings.cloudinaryConfig?.apiKey || process.env.CLOUDINARY_API_KEY || '',
-      apiSecret: settings.cloudinaryConfig?.apiSecret ? '••••••••' : '',
+      apiSecret: settings.cloudinaryConfig?.apiSecret ? 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢' : '',
     },
     s3Config: {
       bucketName: settings.s3Config?.bucketName || process.env.AWS_BUCKET_NAME || '',
       region: settings.s3Config?.region || process.env.AWS_REGION || 'us-east-1',
       accessKeyId: settings.s3Config?.accessKeyId || process.env.AWS_ACCESS_KEY_ID || '',
-      secretAccessKey: settings.s3Config?.secretAccessKey ? '••••••••' : '',
+      secretAccessKey: settings.s3Config?.secretAccessKey ? 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢' : '',
       endpoint: settings.s3Config?.endpoint || process.env.AWS_ENDPOINT || '',
     },
     oidcConfig: oidc,

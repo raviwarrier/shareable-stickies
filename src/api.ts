@@ -156,8 +156,8 @@ export async function getPaste(
   const params = new URLSearchParams();
   if (options?.password) params.append('password', options.password);
   if (options?.incrementView === false) params.append('incrementView', 'false');
-
-  const url = `/api/pastes/${encodeURIComponent(slug)}${params.toString() ? `?${params.toString()}` : ''}`;
+  const queryString = params.toString() ? `?${params.toString()}` : '';
+  const url = `/api/pastes/${encodeURIComponent(slug)}${queryString}`;
   const res = await fetch(url, {
     headers: getAuthHeaders(),
   });

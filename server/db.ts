@@ -73,6 +73,8 @@ export interface S3Config {
   endpoint?: string;
 }
 
+export type PastePreview = Omit<PasteRecord, 'encryptedContent' | 'passwordHash' | 'passwordSalt'> & { content?: string; isBurnedNow?: boolean };
+
 export interface FileTypeCategories {
   documents: boolean;
   code: boolean;
@@ -390,7 +392,7 @@ class Database {
 
     let passwordHash: string | undefined;
     let passwordSalt: string | undefined;
-    if (params.password && params.password.trim()) {
+    if (params.password?.trim()) {
       const pw = hashPassword(params.password.trim());
       passwordHash = pw.hash;
       passwordSalt = pw.salt;
@@ -399,7 +401,7 @@ class Database {
     const paste: PasteRecord = {
       id,
       slug,
-      title: (params.title && params.title.trim()) || 'Untitled Sticky',
+      title: params.title?.trim() || 'Untitled Sticky',
       syntax: params.syntax || 'plaintext',
       encryptedContent,
       clientEncrypted: !!params.clientEncrypted,
@@ -430,7 +432,7 @@ class Database {
   }
 
   public getPasteBySlug(slug: string, options?: { password?: string; incrementView?: boolean; user?: UserRecord | null }): {
-    paste: Omit<PasteRecord, 'encryptedContent' | 'passwordHash' | 'passwordSalt'> & { content?: string; isBurnedNow?: boolean };
+    paste: PastePreview;
     requiresPassword?: boolean;
   } {
     const now = Date.now();
@@ -615,7 +617,7 @@ class Database {
 
   public togglePin(id: string, userId: string): boolean {
     const paste = this.schema.pastes[id];
-    if (paste && paste.userId === userId) {
+    if (paste?.userId === userId) {
       paste.pinned = !paste.pinned;
       this.persist();
       return paste.pinned;
@@ -678,7 +680,7 @@ class Database {
     let cleanUser = username.trim().toLowerCase();
     // In dev mode, allow 'demo' as an alias for 'demo_user'
     if (process.env.NODE_ENV !== 'production' && cleanUser === 'demo') {
-      const demoUserExists = Object.values(this.schema.users).find((u) => u.username.toLowerCase() === 'demo_user');
+      const demoUserExists = Object.values(this.schema.users).some((u) => u.username.toLowerCase() === 'demo_user');
       if (demoUserExists) {
         cleanUser = 'demo_user';
       }
@@ -1044,7 +1046,7 @@ class Database {
       if (!/^[a-zA-Z0-9_-]+$/.test(cleanUser)) {
         throw new Error('Username can only contain letters, numbers, hyphens, and underscores');
       }
-      const existingUser = Object.values(this.schema.users).find(
+      const existingUser = Object.values(this.schema.users).some(
         (u) => u.id !== user.id && u.username.toLowerCase() === cleanUser.toLowerCase()
       );
       if (existingUser) {
