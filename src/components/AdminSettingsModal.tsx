@@ -32,6 +32,9 @@ interface AdminSettingsModalProps {
 
 type TabType = 'theme' | 'permissions' | 'oidc' | 'storage' | 'account';
 
+// Default max attachment size (matches server default of 15MB)
+const DEFAULT_MAX_FILE_SIZE_MB = 15;
+
 export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
   isOpen,
   onClose,
@@ -787,7 +790,7 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                         </div>
                         <p className="text-xs text-[var(--sg-text-muted)]">
                           Attachments are served via zero-knowledge static endpoints with path traversal sanitization.
-                          Maximum image size: 15MB per file. Unlimited images per sticky.
+                          Max attachment size: {DEFAULT_MAX_FILE_SIZE_MB}MB per file. Unlimited files per sticky. Executables blocked.
                         </p>
                       </div>
                     )}

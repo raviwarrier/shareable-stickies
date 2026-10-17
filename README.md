@@ -5,7 +5,7 @@ Self-hostable modern pastebin for you to use or share with others.
 ## Features
 
 - **Paste creation** — Title, content, syntax highlighting across 19 languages, custom slug, expiration options (10 minutes to never), password protection, visibility (public / unlisted / private), burn-after-reading
-- **Image attachments** — Up to 15MB per image, unlimited images per sticky, served via local storage, Cloudinary, or S3
+- **File attachments** — Any non-executable file up to the configured max size (default 15MB), unlimited files per sticky, served via local storage, Cloudinary, or S3. Executables (.exe, .msi, .bat, .sh, .js, .jar, etc.) are blocked for security. Max size is set via `MAX_FILE_SIZE` in `.env`.
 - **Stateless shares** — Compress paste data into a URL fragment (`#s=...`) with zero backend writes; share instantly without saving to the server
 - **Client-side zero-knowledge encryption** — AES-256-GCM + PBKDF2 encryption in the browser before sending to the server; the server never sees plaintext
 - **Authentication** — Login/registration, session tokens, admin/user roles, OIDC single sign-on (SSO), password changes

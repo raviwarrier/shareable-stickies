@@ -535,13 +535,13 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
         </div>
       )}
 
-      {/* Image Attachments Section */}
+      {/* Attachments Section */}
       {paste.attachments && paste.attachments.length > 0 && (
         <div className="p-4 rounded-lg solid-glass-panel font-mono text-xs">
           <div className="flex items-center justify-between mb-3 text-[var(--sg-text)] font-semibold">
             <span className="flex items-center gap-2">
               <ImageIcon className="w-4 h-4 text-[var(--sg-text-muted)]" />
-              Attachments ({paste.attachments.length} {paste.attachments.length === 1 ? 'image' : 'images'})
+              Attachments ({paste.attachments.length} {paste.attachments.length === 1 ? 'file' : 'files'})
             </span>
             <span className="text-xs text-[var(--sg-text-muted)] font-medium">Stored attachments</span>
           </div>

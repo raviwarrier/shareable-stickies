@@ -110,15 +110,23 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
     }
   };
 
-  // Image attachment handler
+  // Attachment handler — allows all non-executable files
+  const EXECUTABLE_EXTENSIONS = new Set([
+    '.exe', '.msi', '.bat', '.cmd', '.com', '.scr', '.ps1', '.psm1', '.psd1',
+    '.vbs', '.vbe', '.js', '.jse', '.wsf', '.wsh', '.hta', '.cpl', '.jar',
+    '.app', '.deb', '.rpm', '.dmg', '.pkg', '.run', '.bin', '.sh', '.cgi',
+    '.fcgi', '.is', '.msu', '.gadget', '.inf', '.reg', '.scf', '.lnk',
+  ]);
+
   const handleFilesAdded = (files: FileList | null) => {
     if (!files || isStatelessMode) return;
     const newFiles: File[] = [];
-    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      if (allowed.includes(file.type)) {
+      const dotIdx = file.name.lastIndexOf('.');
+      const ext = dotIdx >= 0 ? file.name.toLowerCase().substring(dotIdx) : '';
+      if (!ext || !EXECUTABLE_EXTENSIONS.has(ext)) {
         newFiles.push(file);
       }
     }
@@ -325,13 +333,13 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
         )}
       </div>
 
-      {/* Image Attachments Preview Strip */}
+      {/* Attachment Preview Strip */}
       {attachments.length > 0 && (
         <div className="p-3 border-t border-[var(--sg-panel-border)] bg-black/5 dark:bg-white/[0.02]">
           <div className="text-xs md:text-sm font-mono text-[var(--sg-text)] mb-2 flex items-center justify-between font-medium">
             <span className="flex items-center gap-2">
               <ImageIcon className="w-4 h-4 text-[var(--sg-text-muted)]" />
-              Attached Media ({attachments.length} {attachments.length === 1 ? 'image' : 'images'})
+              Attached Files ({attachments.length} {attachments.length === 1 ? 'file' : 'files'})
             </span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2.5">

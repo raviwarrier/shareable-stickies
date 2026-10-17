@@ -51,18 +51,54 @@ const storageDriver = getStorageDriver();
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
-// Configure multer in memory so driver can handle destination (unlimited images per paste)
+// Maximum file size per attachment (configurable via .env, default 15MB)
+const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE || '15728640', 10);
+
+// Executable file extensions to block
+const EXECUTABLE_EXTENSIONS = new Set([
+  '.exe', '.msi', '.bat', '.cmd', '.com', '.scr', '.ps1', '.psm1', '.psd1',
+  '.vbs', '.vbe', '.js', '.jse', '.wsf', '.wsh', '.hta', '.cpl', '.jar',
+  '.app', '.deb', '.rpm', '.dmg', '.pkg', '.run', '.bin', '.sh', '.cgi',
+  '.fcgi', '.is', '.msu', '.gadget', '.inf', '.reg', '.scf', '.lnk',
+]);
+
+// Executable MIME types to block
+const EXECUTABLE_MIME_TYPES = new Set([
+  'application/x-executable',
+  'application/x-msdownload',
+  'application/x-msdos-executable',
+  'application/x-sh',
+  'application/x-shellscript',
+  'text/x-sh',
+  'application/x-java',
+  'application/java-archive',
+  'application/vnd.microsoft.portable-executable',
+  'application/octet-stream',
+]);
+
+function isExecutable(filename: string, mimetype: string): boolean {
+  const dotIdx = filename.lastIndexOf('.');
+  const ext = dotIdx >= 0 ? filename.toLowerCase().substring(dotIdx) : '';
+  if (ext && EXECUTABLE_EXTENSIONS.has(ext)) {
+    return true;
+  }
+  if (EXECUTABLE_MIME_TYPES.has(mimetype)) {
+    return true;
+  }
+  return false;
+}
+
+// Configure multer in memory so driver can handle destination (unlimited files per paste)
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 15 * 1024 * 1024, // 15MB limit per image
+    fileSize: MAX_FILE_SIZE,
   },
   fileFilter: (_req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-    if (allowed.includes(file.mimetype)) {
-      cb(null, true);
+    if (isExecutable(file.originalname, file.mimetype)) {
+      cb(new Error('Executable files are not allowed for security reasons'));
     } else {
-      cb(new Error('Only image files (JPEG, PNG, GIF, WebP, SVG) are allowed'));
+      cb(null, true);
     }
   },
 });
