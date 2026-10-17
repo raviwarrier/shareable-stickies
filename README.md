@@ -2,6 +2,8 @@
 
 Self-hostable modern pastebin for you to use or share with others.
 
+Self-hostable modern pastebin for you to use or share with others.
+
 ## Features
 
 - **Paste creation** — Title, content, syntax highlighting across 19 languages, custom slug, expiration options (10 minutes to never), password protection, visibility (public / unlisted / private), burn-after-reading

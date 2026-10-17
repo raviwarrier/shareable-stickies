@@ -300,7 +300,7 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-4xl max-h-[90vh] flex flex-col rounded-lg solid-glass-panel overflow-y-auto shadow-2xl animate-in fade-in zoom-in-95 duration-150"
+        className="w-full max-w-4xl max-h-[85vh] flex flex-col rounded-lg solid-glass-panel overflow-y-auto shadow-2xl animate-in fade-in zoom-in-95 duration-150"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--sg-panel-border)] solid-glass-subbar shrink-0">
@@ -311,7 +311,7 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
             <div>
               <h2 className="text-sm font-semibold text-[var(--sg-text)] flex items-center gap-2">
                 <span>Server & Administrator Settings</span>
-                <span className="text-[11px] px-1.5 py-0.5 rounded solid-glass-badge font-normal">v0.1.0</span>
+                <span className="text-[11px] px-1.5 py-0.5 rounded solid-glass-badge font-normal">v0.3.0</span>
               </h2>
               <p className="text-xs text-[var(--sg-text-muted)] font-normal">
                 Configure runtime behavior, security permissions, OIDC SSO, and storage drivers.
