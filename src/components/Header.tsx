@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { User } from '../types';
 import { loginUser, registerUser, logoutUser, changePassword } from '../api';
 import { AdminSettingsModal } from './AdminSettingsModal';
@@ -422,7 +423,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Requirement 12: Registration Confirmation Modal with Password Match & Warning */}
-      {showRegisterModal && (
+      {showRegisterModal && typeof document !== 'undefined' && createPortal(
         <div
           onClick={() => setShowRegisterModal(false)}
           className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm text-sm"
@@ -511,11 +512,12 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Account Settings Modal (Password Change) */}
-      {showSettingsModal && user && (
+      {showSettingsModal && user && typeof document !== 'undefined' && createPortal(
         <div
           onClick={() => setShowSettingsModal(false)}
           className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm text-sm"
@@ -656,7 +658,8 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Server & Administrator Settings Modal */}

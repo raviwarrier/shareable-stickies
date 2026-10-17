@@ -89,11 +89,11 @@ function isExecutable(filename: string, mimetype: string): boolean {
 }
 
 // Configure multer in memory so driver can handle destination (unlimited files per paste)
-// File type validation is done dynamically in the create-paste route using DB settings
+// File type and max size validation is done dynamically in the create-paste route using DB settings
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: MAX_FILE_SIZE,
+    fileSize: 250 * 1024 * 1024, // 250MB buffer limit; actual limit enforced dynamically per admin settings
   },
 });
 
@@ -580,6 +580,16 @@ app.get('/api/admin/settings', (req: AuthenticatedRequest, res: Response) => {
       endpoint: settings.s3Config?.endpoint || process.env.AWS_ENDPOINT || '',
     },
     oidcConfig: oidc,
+    fileTypeCategories: settings.fileTypeCategories || {
+      documents: true,
+      code: true,
+      images: true,
+      video: true,
+      audio: true,
+      archives: true,
+      other: true,
+    },
+    maxFileSize: settings.maxFileSize || parseInt(process.env.MAX_FILE_SIZE || '15728640', 10),
     adminUser: {
       id: req.user.id,
       username: req.user.username,
@@ -593,7 +603,16 @@ app.post('/api/admin/settings', (req: AuthenticatedRequest, res: Response) => {
     return res.status(403).json({ error: 'Admin access required' });
   }
   try {
-    const { defaultTheme, allowAnonymousCreation, storageDriver, cloudinaryConfig, s3Config, oidcConfig } = req.body;
+    const {
+      defaultTheme,
+      allowAnonymousCreation,
+      storageDriver,
+      cloudinaryConfig,
+      s3Config,
+      oidcConfig,
+      fileTypeCategories,
+      maxFileSize,
+    } = req.body;
 
     const updatedSettings = db.updateAppSettings({
       ...(defaultTheme ? { defaultTheme } : {}),
@@ -601,6 +620,8 @@ app.post('/api/admin/settings', (req: AuthenticatedRequest, res: Response) => {
       ...(storageDriver ? { storageDriver } : {}),
       ...(cloudinaryConfig ? { cloudinaryConfig } : {}),
       ...(s3Config ? { s3Config } : {}),
+      ...(fileTypeCategories ? { fileTypeCategories } : {}),
+      ...(maxFileSize !== undefined ? { maxFileSize: Number(maxFileSize) } : {}),
     });
 
     if (oidcConfig) {

@@ -903,13 +903,13 @@ class Database {
           endpoint: process.env.AWS_ENDPOINT || '',
         },
         fileTypeCategories: {
-          documents: true,
-          code: true,
-          images: true,
-          video: true,
-          audio: true,
-          archives: true,
-          other: true,
+          documents: process.env.ALLOW_DOCUMENTS !== 'false',
+          code: process.env.ALLOW_CODE !== 'false',
+          images: process.env.ALLOW_IMAGES !== 'false',
+          video: process.env.ALLOW_VIDEO !== 'false',
+          audio: process.env.ALLOW_AUDIO !== 'false',
+          archives: process.env.ALLOW_ARCHIVES !== 'false',
+          other: process.env.ALLOW_OTHER !== 'false',
         },
         maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '15728640', 10),
       };
@@ -946,13 +946,13 @@ class Database {
     }
     if (!this.schema.appSettings.fileTypeCategories) {
       this.schema.appSettings.fileTypeCategories = {
-        documents: true,
-        code: true,
-        images: true,
-        video: true,
-        audio: true,
-        archives: true,
-        other: true,
+        documents: process.env.ALLOW_DOCUMENTS !== 'false',
+        code: process.env.ALLOW_CODE !== 'false',
+        images: process.env.ALLOW_IMAGES !== 'false',
+        video: process.env.ALLOW_VIDEO !== 'false',
+        audio: process.env.ALLOW_AUDIO !== 'false',
+        archives: process.env.ALLOW_ARCHIVES !== 'false',
+        other: process.env.ALLOW_OTHER !== 'false',
       };
     }
     if (!this.schema.appSettings.maxFileSize) {
@@ -967,6 +967,13 @@ class Database {
     this.schema.appSettings = {
       ...current,
       ...settings,
+      fileTypeCategories: settings.fileTypeCategories
+        ? {
+            ...current.fileTypeCategories,
+            ...settings.fileTypeCategories,
+          }
+        : current.fileTypeCategories,
+      maxFileSize: settings.maxFileSize !== undefined ? Number(settings.maxFileSize) : current.maxFileSize,
       cloudinaryConfig: settings.cloudinaryConfig
         ? {
             cloudName: settings.cloudinaryConfig.cloudName ?? current.cloudinaryConfig?.cloudName ?? '',

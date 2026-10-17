@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import QRCode from 'qrcode';
 import { X, Copy, Check, QrCode } from 'lucide-react';
 
@@ -40,7 +41,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  return (
+  const modalContent = (
     <div
       onClick={onClose}
       className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm font-mono text-xs"
@@ -101,4 +102,6 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 };

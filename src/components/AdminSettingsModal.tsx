@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { User, AdminSystemSettings } from '../types';
 import { getAdminSettings, updateAdminSettings, changeAdminCredentials, testAdminStorage } from '../api';
 import {
@@ -19,6 +20,7 @@ import {
   X,
   RefreshCw,
   Globe,
+  Paperclip,
   FileText,
   FileCode,
   Image,
@@ -37,7 +39,7 @@ interface AdminSettingsModalProps {
   onThemeChange: (theme: 'dark' | 'light' | 'sepia') => void;
 }
 
-type TabType = 'theme' | 'permissions' | 'oidc' | 'storage' | 'account';
+type TabType = 'theme' | 'permissions' | 'oidc' | 'storage' | 'attachments' | 'account';
 
 // Default max attachment size (matches server default of 15MB)
 const DEFAULT_MAX_FILE_SIZE_MB = 15;
@@ -293,14 +295,14 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
     }
   };
 
-  return (
+  const modalContent = (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-3 sm:p-5 backdrop-blur-sm text-sm"
+      className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-3 sm:p-5 backdrop-blur-sm text-sm overflow-y-auto"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl max-h-[85vh] rounded-lg solid-glass-panel overflow-y-auto shadow-2xl"
+        className="relative w-full max-w-4xl max-h-[85vh] sm:max-h-[90vh] my-auto rounded-lg solid-glass-panel flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--sg-panel-border)] solid-glass-subbar shrink-0">
@@ -314,7 +316,7 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                 <span className="text-[11px] px-1.5 py-0.5 rounded solid-glass-badge font-normal">v0.3.0</span>
               </h2>
               <p className="text-xs text-[var(--sg-text-muted)] font-normal">
-                Configure runtime behavior, security permissions, OIDC SSO, and storage drivers.
+                Configure runtime behavior, security permissions, OIDC SSO, storage drivers, and attachment policies.
               </p>
             </div>
           </div>
@@ -347,9 +349,9 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
         )}
 
         {/* Main Body with Sidebar Tabs */}
-        <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+        <div className="flex flex-col md:flex-row flex-1 overflow-hidden min-h-0">
           {/* Navigation Tabs */}
-          <div className="w-full md:w-56 border-b md:border-b-0 md:border-r border-[var(--sg-panel-border)] solid-glass-subbar p-2.5 flex md:flex-col gap-1 overflow-x-auto shrink-0">
+          <div className="w-full md:w-56 border-b md:border-b-0 md:border-r border-[var(--sg-panel-border)] solid-glass-subbar p-2.5 flex md:flex-col gap-1 overflow-x-auto md:overflow-y-auto shrink-0">
             <button
               type="button"
               onClick={() => setActiveTab('theme')}
@@ -404,6 +406,19 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
 
             <button
               type="button"
+              onClick={() => setActiveTab('attachments')}
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-left text-xs transition cursor-pointer shrink-0 font-medium ${
+                activeTab === 'attachments'
+                  ? 'solid-glass-btn-active text-[var(--sg-text)]'
+                  : 'text-[var(--sg-text-muted)] hover:text-[var(--sg-text)] hover:bg-black/5 dark:hover:bg-white/5'
+              }`}
+            >
+              <Paperclip className="w-3.5 h-3.5" />
+              <span>5. Attachments</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setActiveTab('account')}
               className={`flex items-center gap-2 px-3 py-2 rounded-md text-left text-xs transition cursor-pointer shrink-0 font-medium ${
                 activeTab === 'account'
@@ -412,7 +427,7 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
               }`}
             >
               <KeyRound className="w-3.5 h-3.5" />
-              <span>5. Admin Account</span>
+              <span>6. Admin Account</span>
             </button>
           </div>
 
@@ -825,84 +840,10 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                           <span className="text-xs text-emerald-500 font-mono font-medium">./uploads (Active)</span>
                         </div>
                         <p className="text-xs text-[var(--sg-text-muted)]">
-                          Attachments are served via zero-knowledge static endpoints with path traversal sanitization.
-                          Max attachment size: {maxFileSizeMB}MB per file. Unlimited files per sticky. Executables blocked.
+                          Uploaded attachments are stored locally on the server filesystem under <code className="font-mono text-[var(--sg-text)]">./uploads</code> and served via static endpoints with zero-knowledge path traversal protection.
                         </p>
                       </div>
                     )}
-
-                    {/* File Type Categories */}
-                    <div className="p-3.5 rounded-md solid-glass-panel border border-[var(--sg-panel-border)] flex flex-col gap-2">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-semibold text-[var(--sg-text)]">Allowed File Categories</span>
-                        <span className="text-[10px] text-[var(--sg-text-muted)]">Executables always blocked</span>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5">
-                        {[
-                          { key: 'documents', label: 'Documents', icon: <FileText className="w-3 h-3" /> },
-                          { key: 'code', label: 'Code', icon: <FileCode className="w-3 h-3" /> },
-                          { key: 'images', label: 'Images', icon: <Image className="w-3 h-3" /> },
-                          { key: 'video', label: 'Video', icon: <Video className="w-3 h-3" /> },
-                          { key: 'audio', label: 'Audio', icon: <Music2 className="w-3 h-3" /> },
-                          { key: 'archives', label: 'Archives', icon: <Archive className="w-3 h-3" /> },
-                          { key: 'other', label: 'Other', icon: <FileQuestion className="w-3 h-3" /> },
-                        ].map((cat) => (
-                          <div
-                            key={cat.key}
-                            className="flex items-center justify-between p-1.5 rounded-md cursor-pointer transition border"
-                            style={{
-                              borderColor: fileTypeCategories[cat.key as keyof typeof fileTypeCategories]
-                                ? 'var(--sg-btn-active-border)'
-                                : 'var(--sg-panel-border)',
-                              backgroundColor: fileTypeCategories[cat.key as keyof typeof fileTypeCategories]
-                                ? 'rgba(255, 255, 255, 0.05)'
-                                : 'transparent',
-                            }}
-                            onClick={() =>
-                              setFileTypeCategories({
-                                ...fileTypeCategories,
-                                [cat.key]: !fileTypeCategories[cat.key as keyof typeof fileTypeCategories],
-                              })
-                            }
-                          >
-                            <div className="flex items-center gap-1">
-                              {cat.icon}
-                              <span className="text-[10px] text-[var(--sg-text)] font-medium">{cat.label}</span>
-                            </div>
-                            <div
-                              className={`w-3 h-3 rounded border transition ${
-                                fileTypeCategories[cat.key as keyof typeof fileTypeCategories]
-                                  ? 'bg-[var(--sg-btn-primary-bg)] border-[var(--sg-btn-active-border)]'
-                                  : 'border-[var(--sg-panel-border)] bg-transparent'
-                              }`}
-                            >
-                              {fileTypeCategories[cat.key as keyof typeof fileTypeCategories] && (
-                                <Check className="w-2 h-2" />
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Max File Size */}
-                    <div className="p-3.5 rounded-md solid-glass-panel border border-[var(--sg-panel-border)] flex flex-col gap-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-xs font-semibold text-[var(--sg-text)]">Max File Size (MB)</span>
-                          <span className="text-[10px] text-[var(--sg-text-muted)]">Per file attachment size limit</span>
-                        </div>
-                        <input
-                          type="number"
-                          value={maxFileSizeMB}
-                          onChange={(e) => setMaxFileSizeMB(parseInt(e.target.value) || 1)}
-                          min="1"
-                          max="1000"
-                          step="1"
-                          className="solid-glass-input rounded-md px-3 py-2 text-[var(--sg-input-text)] outline-none text-xs font-mono w-20"
-                        />
-                      </div>
-                    </div>
 
                     {storageDriver === 'cloudinary' && (
                       <div className="p-3.5 rounded-md solid-glass-panel border border-[var(--sg-panel-border)] flex flex-col gap-3">
@@ -1072,7 +1013,263 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                   </div>
                 )}
 
-                {/* TAB 5: Admin Account Credentials */}
+                {/* TAB 5: Attachments & File Upload Policy */}
+                {activeTab === 'attachments' && (
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-[var(--sg-text)] flex items-center gap-2">
+                        <Paperclip className="w-4 h-4 text-[var(--sg-text-muted)]" />
+                        <span>Attachment & Upload Settings</span>
+                      </h3>
+                      <p className="text-xs text-[var(--sg-text-muted)] mt-0.5">
+                        Configure allowed file type categories and per-file attachment size limits matching .env specifications.
+                      </p>
+                    </div>
+
+                    {/* Setting 1: Max Filesize for Attachments */}
+                    <div className="p-4 rounded-md solid-glass-panel border border-[var(--sg-panel-border)] flex flex-col gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-[var(--sg-text)]">Max Filesize for Attachments</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded font-mono bg-black/10 dark:bg-white/10 text-[var(--sg-text-muted)]">
+                              MAX_FILE_SIZE
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-[var(--sg-text-muted)] mt-0.5">
+                            Maximum permitted size for each individual uploaded file attachment.
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <input
+                            type="number"
+                            value={maxFileSizeMB}
+                            onChange={(e) => setMaxFileSizeMB(Math.max(1, parseInt(e.target.value) || 1))}
+                            min="1"
+                            max="500"
+                            step="1"
+                            className="solid-glass-input rounded-md px-3 py-1.5 text-[var(--sg-input-text)] outline-none text-xs font-mono w-24 text-right"
+                          />
+                          <span className="text-xs text-[var(--sg-text-muted)] font-medium">MB</span>
+                        </div>
+                      </div>
+
+                      {/* Quick presets */}
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-[var(--sg-panel-border)]/50">
+                        <span className="text-[11px] text-[var(--sg-text-muted)] mr-1">Presets:</span>
+                        {[5, 10, 15, 25, 50, 100].map((size) => (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => setMaxFileSizeMB(size)}
+                            className={`px-2 py-0.5 rounded text-[11px] font-mono transition cursor-pointer ${
+                              maxFileSizeMB === size
+                                ? 'solid-glass-btn-active text-[var(--sg-text)] font-semibold ring-1 ring-[var(--sg-text)]/30'
+                                : 'solid-glass-btn text-[var(--sg-text-muted)] hover:text-[var(--sg-text)]'
+                            }`}
+                          >
+                            {size}MB{size === 15 ? ' (Default)' : ''}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="text-[11px] text-[var(--sg-text-muted)] font-mono bg-black/5 dark:bg-white/5 px-2.5 py-1.5 rounded flex items-center justify-between">
+                        <span>Active file size threshold:</span>
+                        <span className="text-[var(--sg-text)] font-semibold">
+                          {maxFileSizeMB} MB (~{(maxFileSizeMB * 1024 * 1024).toLocaleString()} bytes)
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Setting 2: Allow Different Types of Attachments (Toggles) */}
+                    <div className="p-4 rounded-md solid-glass-panel border border-[var(--sg-panel-border)] flex flex-col gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-[var(--sg-text)]">Allow Different Types of Attachments</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded font-mono bg-black/10 dark:bg-white/10 text-[var(--sg-text-muted)]">
+                              ALLOW_*
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-[var(--sg-text-muted)] mt-0.5">
+                            Toggle individual file categories on or off. Disabling a category rejects uploads of matching extensions.
+                          </p>
+                        </div>
+
+                        {/* Bulk actions */}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFileTypeCategories({
+                                documents: true,
+                                code: true,
+                                images: true,
+                                video: true,
+                                audio: true,
+                                archives: true,
+                                other: true,
+                              })
+                            }
+                            className="px-2 py-1 rounded text-[10px] font-medium solid-glass-btn text-[var(--sg-text)] transition cursor-pointer"
+                          >
+                            Allow All
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFileTypeCategories({
+                                documents: false,
+                                code: false,
+                                images: false,
+                                video: false,
+                                audio: false,
+                                archives: false,
+                                other: false,
+                              })
+                            }
+                            className="px-2 py-1 rounded text-[10px] font-medium solid-glass-btn text-[var(--sg-text-muted)] hover:text-[var(--sg-text)] transition cursor-pointer"
+                          >
+                            Block All
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Category Toggles List */}
+                      <div className="flex flex-col gap-2 pt-1">
+                        {[
+                          {
+                            key: 'documents',
+                            label: 'Documents',
+                            envKey: 'ALLOW_DOCUMENTS',
+                            icon: <FileText className="w-4 h-4 text-sky-400 shrink-0" />,
+                            desc: 'PDF, Word, Text, RTF, ODT, Pages (.pdf, .doc, .docx, .txt, .rtf, .odt, .pages)',
+                          },
+                          {
+                            key: 'code',
+                            label: 'Source Code & Scripts',
+                            envKey: 'ALLOW_CODE',
+                            icon: <FileCode className="w-4 h-4 text-emerald-400 shrink-0" />,
+                            desc: 'JS, TS, Python, Rust, Go, Java, C/C++, HTML, CSS, JSON, YAML, Markdown (.js, .ts, .py, etc.)',
+                          },
+                          {
+                            key: 'images',
+                            label: 'Images & Photos',
+                            envKey: 'ALLOW_IMAGES',
+                            icon: <Image className="w-4 h-4 text-amber-400 shrink-0" />,
+                            desc: 'Web & bitmap formats (.jpg, .jpeg, .png, .gif, .svg, .webp, .ico, .tiff, .heic)',
+                          },
+                          {
+                            key: 'video',
+                            label: 'Video Recordings',
+                            envKey: 'ALLOW_VIDEO',
+                            icon: <Video className="w-4 h-4 text-indigo-400 shrink-0" />,
+                            desc: 'Digital video files (.mp4, .webm, .mkv, .mov, .avi, .flv, .m4v)',
+                          },
+                          {
+                            key: 'audio',
+                            label: 'Audio & Music',
+                            envKey: 'ALLOW_AUDIO',
+                            icon: <Music2 className="w-4 h-4 text-purple-400 shrink-0" />,
+                            desc: 'Audio tracks & sound files (.mp3, .wav, .flac, .aac, .ogg, .wma, .m4a)',
+                          },
+                          {
+                            key: 'archives',
+                            label: 'Compressed Archives',
+                            envKey: 'ALLOW_ARCHIVES',
+                            icon: <Archive className="w-4 h-4 text-orange-400 shrink-0" />,
+                            desc: 'Compressed file packages (.zip, .tar, .gz, .7z, .rar, .bz2, .xz)',
+                          },
+                          {
+                            key: 'other',
+                            label: 'Other Non-Executable Files',
+                            envKey: 'ALLOW_OTHER',
+                            icon: <FileQuestion className="w-4 h-4 text-teal-400 shrink-0" />,
+                            desc: 'Any remaining file formats or extensions not categorized above',
+                          },
+                        ].map((cat) => {
+                          const isEnabled = Boolean(fileTypeCategories[cat.key as keyof typeof fileTypeCategories]);
+                          return (
+                            <div
+                              key={cat.key}
+                              onClick={() =>
+                                setFileTypeCategories({
+                                  ...fileTypeCategories,
+                                  [cat.key]: !isEnabled,
+                                })
+                              }
+                              className={`p-3 rounded-md border transition cursor-pointer flex items-center justify-between gap-3 ${
+                                isEnabled
+                                  ? 'solid-glass-panel border-[var(--sg-btn-active-border)] ring-1 ring-[var(--sg-text)]/10'
+                                  : 'solid-glass-panel opacity-65 hover:opacity-90 border-[var(--sg-panel-border)]'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="p-1.5 rounded-md bg-black/10 dark:bg-white/10 shrink-0">
+                                  {cat.icon}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-semibold text-[var(--sg-text)] truncate">{cat.label}</span>
+                                    <span className="text-[10px] font-mono text-[var(--sg-text-muted)] opacity-75">
+                                      {cat.envKey}
+                                    </span>
+                                  </div>
+                                  <p className="text-[11px] text-[var(--sg-text-muted)] truncate mt-0.5">
+                                    {cat.desc}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Toggle switch */}
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className={`text-[10px] font-medium ${isEnabled ? 'text-emerald-500' : 'text-[var(--sg-text-muted)]'}`}>
+                                  {isEnabled ? 'Allowed' : 'Blocked'}
+                                </span>
+                                <div
+                                  className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer ${
+                                    isEnabled ? 'bg-[var(--sg-btn-primary-bg)]' : 'bg-black/20 dark:bg-white/20'
+                                  }`}
+                                >
+                                  <div
+                                    className={`w-3.5 h-3.5 rounded-full bg-white absolute top-0.75 transition-transform ${
+                                      isEnabled ? 'left-4.5 shadow-sm' : 'left-0.75'
+                                    }`}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Security Policy Notice */}
+                      <div className="p-3 rounded-md solid-glass-subbar border border-[var(--sg-panel-border)] text-xs text-[var(--sg-text-muted)] flex items-start gap-2.5 mt-1">
+                        <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                        <div className="flex flex-col gap-0.5 text-[11px]">
+                          <span className="font-semibold text-[var(--sg-text)]">Security Enforcement</span>
+                          <span>
+                            Executable files and scripts (<code className="font-mono text-[var(--sg-text)]">.exe, .bat, .cmd, .sh, .jar, .bin, .msi, .ps1</code>) are always blocked at the server level regardless of category toggles.
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-2">
+                      <button
+                        type="button"
+                        onClick={() => handleSaveSettings()}
+                        disabled={saving}
+                        className="px-4 py-2 rounded-md solid-glass-btn-primary font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                      >
+                        {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                        <span>Save Attachment Settings</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 6: Admin Account Credentials */}
                 {activeTab === 'account' && (
                   <form onSubmit={handleChangeAdminCredentials} className="flex flex-col gap-3.5">
                     <div>
@@ -1180,4 +1377,6 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 };

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Paste, User } from '../types';
 import {
   getUserPastes,
@@ -731,7 +732,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onEditPa
       )}
 
       {/* Requirement 14: OpenID Connect (OIDC) Configuration Modal */}
-      {showOidcModal && (
+      {showOidcModal && typeof document !== 'undefined' && createPortal(
         <div
           onClick={() => setShowOidcModal(false)}
           className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm font-mono text-sm"
@@ -882,7 +883,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onEditPa
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Admin Settings Modal */}
