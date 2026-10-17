@@ -8,6 +8,41 @@ import { getStorageDriver, StoredAttachment } from './server/storage/storageDriv
 
 dotenv.config();
 
+// ---------------------------------------------------------------------------
+// Input Sanitization — Defense-in-depth for all form fields
+// (This app uses a JSON file store, not SQL, so traditional SQL injection
+//  is not possible. These helpers are added as a best-practice layer to
+//  neutralize any injection-style payloads in user-submitted text.)
+// ---------------------------------------------------------------------------
+
+/**
+ * Strips control characters and null bytes from a string.
+ * Prevents injection-style payloads in form fields.
+ */
+function sanitizeInput(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value !== 'string') return String(value);
+  return value
+    .replace(/\0/g, '')                       // remove null bytes
+    .replace(/[\x00-\x1f\x7f-\x9f]/g, '');   // remove control characters
+}
+
+/**
+ * Sanitizes a username: alphanumeric, hyphens, underscores only, 3–32 chars.
+ */
+function sanitizeUsername(value: unknown): string {
+  const s = sanitizeInput(value);
+  return s.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 32);
+}
+
+/**
+ * Sanitizes a paste slug: alphanumeric, hyphens, underscores only, 3–64 chars.
+ */
+function sanitizeSlug(value: unknown): string {
+  const s = sanitizeInput(value);
+  return s.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64);
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const storageDriver = getStorageDriver();
@@ -73,10 +108,11 @@ app.get('/api/uploads/:filename', (req, res) => {
 app.post('/api/auth/login', (req, res) => {
   try {
     const { username, password } = req.body;
-    if (!username || !password) {
+    const safeUsername = sanitizeUsername(username);
+    if (!safeUsername || !password) {
       return res.status(400).json({ error: 'Username and password are required' });
     }
-    const { user, token } = db.authenticate(username, password);
+    const { user, token } = db.authenticate(safeUsername, password);
     res.json({
       token,
       user: {
@@ -93,10 +129,11 @@ app.post('/api/auth/login', (req, res) => {
 app.post('/api/auth/register', (req, res) => {
   try {
     const { username, password } = req.body;
-    if (!username || !password) {
+    const safeUsername = sanitizeUsername(username);
+    if (!safeUsername || !password) {
       return res.status(400).json({ error: 'Username and password are required' });
     }
-    const user = db.createUser(username, password);
+    const user = db.createUser(safeUsername, password);
     const { token } = db.authenticate(username, password);
     res.json({
       token,
@@ -152,7 +189,7 @@ app.post('/api/auth/change-password', (req: AuthenticatedRequest, res: Response)
 
 // --- Custom Slug Validation Preflight ---
 app.get('/api/validate-slug/:slug', (req, res) => {
-  const slug = req.params.slug;
+  const slug = sanitizeSlug(req.params.slug);
   const excludePasteId = (req.query.excludePasteId as string) || undefined;
   const validation = db.validateSlug(slug);
   if (!validation.valid) {
@@ -188,6 +225,12 @@ app.post('/api/pastes', upload.array('attachments'), async (req: AuthenticatedRe
       burnAfterReading,
     } = req.body;
 
+    const safeTitle = sanitizeInput(title || '');
+    const safeCustomSlug = customSlug ? sanitizeSlug(customSlug) : undefined;
+    const safeSyntax = sanitizeInput(syntax || 'plaintext') as 'plaintext' | 'markdown' | 'javascript' | 'typescript' | 'python' | 'rust' | 'go' | 'java' | 'c' | 'cpp' | 'csharp' | 'php' | 'ruby' | 'bash' | 'powershell' | 'sql' | 'yaml' | 'json' | 'html' | 'csv' | 'diff';
+    const safeExpiration = sanitizeInput(expiration || 'never');
+    const safeVisibility = sanitizeInput(visibility || 'public') as 'public' | 'unlisted' | 'private';
+
     if (!content && content !== '') {
       return res.status(400).json({ error: 'Paste content cannot be empty' });
     }
@@ -203,12 +246,12 @@ app.post('/api/pastes', upload.array('attachments'), async (req: AuthenticatedRe
     const result = db.createPaste({
       title,
       content,
-      syntax: syntax || 'plaintext',
-      customSlug: customSlug ? customSlug.trim() : undefined,
-      expiration: expiration || 'never',
+      syntax: safeSyntax,
+      customSlug: safeCustomSlug,
+      expiration: safeExpiration,
       password,
       clientEncrypted: clientEncrypted === 'true' || clientEncrypted === true,
-      visibility: visibility || 'public',
+      visibility: safeVisibility,
       burnAfterReading: burnAfterReading === 'true' || burnAfterReading === true,
       userId: req.user?.id || null,
       authorUsername: req.user?.username || null,
@@ -306,7 +349,8 @@ app.get('/api/user/pastes', (req: AuthenticatedRequest, res: Response) => {
 app.get('/api/public-stickies/:username', (req, res) => {
   try {
     const { username } = req.params;
-    const result = db.listPublicStickiesByUsername(username);
+    const safeUsername = sanitizeUsername(username);
+    const result = db.listPublicStickiesByUsername(safeUsername);
     res.json(result);
   } catch (err: any) {
     res.status(404).json({ error: err.message || 'Public stickies not found' });
@@ -338,7 +382,11 @@ app.put('/api/pastes/:id', (req: AuthenticatedRequest, res: Response) => {
   }
   try {
     const { title, content, syntax, visibility, customSlug } = req.body;
-    const updated = db.updatePaste(req.params.id, { title, content, syntax, visibility, customSlug }, req.user);
+    const safeTitle = sanitizeInput(title || '');
+    const safeSyntax = sanitizeInput(syntax || 'plaintext') as 'plaintext' | 'markdown' | 'javascript' | 'typescript' | 'python' | 'rust' | 'go' | 'java' | 'c' | 'cpp' | 'csharp' | 'php' | 'ruby' | 'bash' | 'powershell' | 'sql' | 'yaml' | 'json' | 'html' | 'csv' | 'diff';
+    const safeVisibility = sanitizeInput(visibility || 'public') as 'public' | 'unlisted' | 'private';
+    const safeCustomSlug = customSlug ? sanitizeSlug(customSlug) : undefined;
+    const updated = db.updatePaste(req.params.id, { title: safeTitle, content, syntax: safeSyntax, visibility: safeVisibility, customSlug: safeCustomSlug }, req.user);
     res.json({
       success: true,
       paste: {

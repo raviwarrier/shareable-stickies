@@ -270,7 +270,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                 {/* Dropdown Menu */}
                 {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-md solid-glass-dropdown py-1.5 z-[110] font-mono text-sm shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+                  <div className="absolute right-0 mt-2 w-56 rounded-md solid-glass-dropdown py-1.5 z-[9999] font-mono text-sm shadow-2xl animate-in fade-in zoom-in-95 duration-150">
                     <div className="px-3.5 py-2 border-b border-[var(--sg-panel-border)] text-xs">
                       <p className="text-[var(--sg-text-muted)] text-[11px]">Signed in as</p>
                       <p className="font-medium text-[var(--sg-text)] truncate text-xs">@{user.username}</p>

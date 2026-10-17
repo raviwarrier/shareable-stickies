@@ -255,11 +255,11 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
         </div>
         <p className="text-[var(--sg-text-muted)] mb-4">{error}</p>
         <button
-          onClick={() => onNavigate('/')}
+          onClick={() => window.history.back()}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-md solid-glass-btn text-[var(--sg-btn-text)] transition cursor-pointer text-xs"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          Back to New Sticky
+          Back
         </button>
       </div>
     );
@@ -376,9 +376,9 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
                   {paste.visibility}
                 </span>
               )}
-              {isClientEnc && (
-                <span className="text-xs px-2 py-0.5 rounded-md solid-glass-badge font-medium flex items-center gap-1 text-emerald-500">
-                  <ShieldCheck className="w-3.5 h-3.5" /> Zero-Knowledge AES-GCM
+              {paste.hasPassword && (
+                <span className="text-xs px-2 py-0.5 rounded-md solid-glass-badge font-medium flex items-center gap-1 text-rose-500">
+                  <Lock className="w-3.5 h-3.5" /> Password Protected
                 </span>
               )}
             </div>
@@ -477,15 +477,15 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
         </div>
       </div>
 
-      {/* Zero-Knowledge Decryption Unlock Form if encrypted */}
-      {isClientEnc && clientDecryptedContent === null ? (
+      {/* Client-side decryption form — shown to ALL users (owner and non-owner) */}
+      {isClientEnc && clientDecryptedContent === null && (
         <div className="p-6 rounded-lg solid-glass-panel border-emerald-500/30 font-mono text-xs flex flex-col gap-3 max-w-xl mx-auto my-6">
           <div className="flex items-center gap-2 text-emerald-500 font-semibold">
             <ShieldCheck className="w-4 h-4" />
             <span>Client-Side Zero-Knowledge Encryption</span>
           </div>
           <p className="text-[var(--sg-text-muted)] text-xs leading-relaxed font-normal">
-            This sticky was encrypted client-side in the author's browser using AES-GCM (256-bit). The server only holds ciphertext. Enter the passphrase to decrypt locally in your browser.
+            This sticky was encrypted client-side when it was created. The server only holds ciphertext. Enter the passphrase to decrypt locally in your browser.
           </p>
 
           <form onSubmit={handleClientDecrypt} className="flex flex-col gap-3 mt-1">
@@ -506,8 +506,10 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
             </button>
           </form>
         </div>
-      ) : (
-        /* Main Content Viewer with Line Numbers */
+      )}
+
+      {/* Main Content Viewer with Line Numbers — only when not (encrypted and undecrypted) */}
+      {(isClientEnc === false || clientDecryptedContent !== null) && (
         <div className="rounded-lg solid-glass-panel overflow-hidden flex min-h-[420px]">
           {/* Line numbers gutter */}
           <div

@@ -197,7 +197,7 @@ export const PublicStickies: React.FC<PublicStickiesProps> = ({
                     <h2 className="font-semibold text-[var(--sg-text)] truncate text-sm transition flex-1">
                       {item.title}
                     </h2>
-                    <span className="px-2 py-0.5 rounded solid-glass-badge font-semibold uppercase text-[11px] shrink-0 font-mono">
+                    <span className="px-2 py-0.5 rounded-md solid-glass-badge font-semibold uppercase text-[11px] shrink-0 font-mono">
                       {item.syntax}
                     </span>
                   </div>

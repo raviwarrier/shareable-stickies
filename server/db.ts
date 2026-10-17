@@ -474,7 +474,12 @@ class Database {
     }
 
     // Decrypt content from rest
-    const plaintext = decryptAtRest(paste.encryptedContent);
+    let plaintext: string;
+    try {
+      plaintext = decryptAtRest(paste.encryptedContent);
+    } catch {
+      throw new Error('Unable to decrypt paste data. The encryption key may have changed or the data may be corrupted.');
+    }
 
     let isBurnedNow = false;
     if (options?.incrementView !== false) {

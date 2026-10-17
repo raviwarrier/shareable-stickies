@@ -158,13 +158,6 @@ export default function App() {
       const fullUrl = `${window.location.origin}${res.shareUrl.startsWith('/') ? '' : '/'}${res.shareUrl}`;
       setLastCreatedUrl(fullUrl);
       setLastCreatedSlug(res.paste.slug);
-
-      // Reset editor inputs
-      setTitle('');
-      setContent('');
-      setCustomSlug('');
-      setPassword('');
-      setAttachments([]);
     } catch (err: any) {
       setSubmitError(err.message || (editingPaste ? 'Failed to update sticky' : 'Failed to create sticky'));
     } finally {
