@@ -8,6 +8,7 @@ import 'prismjs/components/prism-powershell';
 import 'prismjs/components/prism-bash';
 import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-yaml';
+import 'prismjs/components/prism-toml';
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-markdown';
 import 'prismjs/components/prism-c';
@@ -19,6 +20,7 @@ import 'prismjs/components/prism-go';
 import 'prismjs/components/prism-php';
 import 'prismjs/components/prism-ruby';
 import 'prismjs/components/prism-diff';
+// HTML and XML both use Prism's 'markup' language component
 
 const LANGUAGE_MAP: Record<string, string> = {
   javascript: 'javascript',
@@ -32,7 +34,7 @@ const LANGUAGE_MAP: Record<string, string> = {
   sql: 'sql',
   yaml: 'yaml',
   yml: 'yaml',
-  toml: 'yaml',
+  toml: 'toml',
   json: 'json',
   markdown: 'markdown',
   md: 'markdown',

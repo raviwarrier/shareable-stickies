@@ -1,11 +1,11 @@
-# Shareable Stickies
+# Shareable Stickies v0.3.0
 
 Self-hostable modern pastebin for you to use or share with others.
 
 ## Features
 
 - **Paste creation** — Title, content, syntax highlighting across 19 languages, custom slug, expiration options (10 minutes to never), password protection, visibility (public / unlisted / private), burn-after-reading
-- **File attachments** — Any non-executable file up to the configured max size (default 15MB), unlimited files per sticky, served via local storage, Cloudinary, or S3. Executables (.exe, .msi, .bat, .sh, .js, .jar, etc.) are blocked for security. Max size is set via `MAX_FILE_SIZE` in `.env`.
+- **File attachments** — Admin-configurable file type categories (documents, code, images, video, audio, archives, other), unlimited files per sticky, served via local storage, Cloudinary, or S3. Executables (.exe, .msi, .bat, .sh, .js, .jar, etc.) are always blocked. Max size per file is configurable via `MAX_FILE_SIZE` in `.env` (default 15MB) or the Admin Settings modal.
 - **Stateless shares** — Compress paste data into a URL fragment (`#s=...`) with zero backend writes; share instantly without saving to the server
 - **Client-side zero-knowledge encryption** — AES-256-GCM + PBKDF2 encryption in the browser before sending to the server; the server never sees plaintext
 - **Authentication** — Login/registration, session tokens, admin/user roles, OIDC single sign-on (SSO), password changes
@@ -103,6 +103,22 @@ docker-compose up -d
    docker-compose up -d --build     # if using Docker
    ```
 
+### File Type Categories
+
+Administrators can control which file types users may attach to stickies via the Admin Settings modal or `.env`:
+
+| Category | File Extensions | `.env` toggle |
+|----------|----------------|---------------|
+| Documents | .pdf, .doc, .docx, .txt, .rtf, .odt, .pages | `ALLOW_DOCUMENTS` |
+| Code | .js, .ts, .py, .java, .cpp, .c, .html, .css, .xml, .json, .yaml, .md, etc. | `ALLOW_CODE` |
+| Images | .jpg, .jpeg, .png, .gif, .bmp, .svg, .webp, .ico, .tiff | `ALLOW_IMAGES` |
+| Video | .mp4, .avi, .mov, .wmv, .flv, .mkv, .webm, .m4v | `ALLOW_VIDEO` |
+| Audio | .mp3, .wav, .flac, .aac, .ogg, .wma, .m4a | `ALLOW_AUDIO` |
+| Archives | .zip, .rar, .7z, .tar, .gz, .bz2, .xz | `ALLOW_ARCHIVES` |
+| Other | Any non-executable file not in above categories | `ALLOW_OTHER` |
+
+Set any category to `false` to disable it. Executables (`.exe`, `.msi`, `.bat`, `.sh`, `.js`, `.jar`, `.app`, `.dmg`, `.pkg`, etc.) are **always blocked** regardless of category settings.
+
 ### setup.sh
 
 `setup.sh` is the interactive installation and administration wizard. It configures:
@@ -110,6 +126,7 @@ docker-compose up -d
 - Public/anonymous creation toggle
 - OIDC SSO settings
 - Storage driver (local / Cloudinary / S3) and credentials
+- File type categories and max attachment size
 - Administrator username and password
 - Encryption secret
 

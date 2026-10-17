@@ -12,7 +12,8 @@ export const SYNTAX_OPTIONS = [
   { value: 'csv', label: 'CSV' },
   { value: 'diff', label: 'Diff / Patch' },
   { value: 'go', label: 'Go' },
-  { value: 'html', label: 'HTML / XML' },
+  { value: 'html', label: 'HTML' },
+  { value: 'xml', label: 'XML' },
   { value: 'java', label: 'Java' },
   { value: 'javascript', label: 'JavaScript' },
   { value: 'json', label: 'JSON' },
@@ -24,8 +25,9 @@ export const SYNTAX_OPTIONS = [
   { value: 'ruby', label: 'Ruby' },
   { value: 'rust', label: 'Rust' },
   { value: 'sql', label: 'SQL' },
+  { value: 'toml', label: 'TOML' },
   { value: 'typescript', label: 'TypeScript' },
-  { value: 'yaml', label: 'YAML / TOML' },
+  { value: 'yaml', label: 'YAML' },
 ];
 
 interface EditorPaneProps {
@@ -195,12 +197,12 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
             }
           >
             <Paperclip className="w-3.5 h-3.5" />
-            <span>Images ({attachments.length})</span>
+            <span>Attachments ({attachments.length})</span>
           </button>
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept=""
             multiple
             disabled={isStatelessMode}
             className="hidden"

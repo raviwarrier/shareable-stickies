@@ -69,12 +69,24 @@ export interface S3Config {
   endpoint?: string;
 }
 
+export interface FileTypeCategories {
+  documents: boolean;
+  code: boolean;
+  images: boolean;
+  video: boolean;
+  audio: boolean;
+  archives: boolean;
+  other: boolean;
+}
+
 export interface AppSettingsRecord {
   defaultTheme: 'dark' | 'light' | 'sepia';
   allowAnonymousCreation: boolean;
   storageDriver: 'local' | 'cloudinary' | 's3';
   cloudinaryConfig?: CloudinaryConfig;
   s3Config?: S3Config;
+  fileTypeCategories: FileTypeCategories;
+  maxFileSize: number;
 }
 
 interface DatabaseSchema {
@@ -890,6 +902,16 @@ class Database {
           secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
           endpoint: process.env.AWS_ENDPOINT || '',
         },
+        fileTypeCategories: {
+          documents: true,
+          code: true,
+          images: true,
+          video: true,
+          audio: true,
+          archives: true,
+          other: true,
+        },
+        maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '15728640', 10),
       };
       this.persist();
     }
@@ -921,6 +943,20 @@ class Database {
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
         endpoint: process.env.AWS_ENDPOINT || '',
       };
+    }
+    if (!this.schema.appSettings.fileTypeCategories) {
+      this.schema.appSettings.fileTypeCategories = {
+        documents: true,
+        code: true,
+        images: true,
+        video: true,
+        audio: true,
+        archives: true,
+        other: true,
+      };
+    }
+    if (!this.schema.appSettings.maxFileSize) {
+      this.schema.appSettings.maxFileSize = parseInt(process.env.MAX_FILE_SIZE || '15728640', 10);
     }
 
     return this.schema.appSettings;

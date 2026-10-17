@@ -74,6 +74,16 @@ export interface OidcConfig {
   requireOidcOnly: boolean;
 }
 
+export interface FileTypeCategories {
+  documents: boolean;
+  code: boolean;
+  images: boolean;
+  video: boolean;
+  audio: boolean;
+  archives: boolean;
+  other: boolean;
+}
+
 export interface AdminSystemSettings {
   defaultTheme: 'dark' | 'light' | 'sepia';
   allowAnonymousCreation: boolean;
@@ -81,6 +91,8 @@ export interface AdminSystemSettings {
   cloudinaryConfig: CloudinaryConfig;
   s3Config: S3Config;
   oidcConfig: OidcConfig;
+  fileTypeCategories: FileTypeCategories;
+  maxFileSize: number;
   adminUser?: {
     id: string;
     username: string;

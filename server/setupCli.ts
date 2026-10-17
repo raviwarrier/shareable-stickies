@@ -41,6 +41,16 @@ export function runCliSync() {
     storageDriver: validStorage,
     cloudinaryConfig,
     s3Config,
+    fileTypeCategories: {
+      documents: process.env.ALLOW_DOCUMENTS !== 'false',
+      code: process.env.ALLOW_CODE !== 'false',
+      images: process.env.ALLOW_IMAGES !== 'false',
+      video: process.env.ALLOW_VIDEO !== 'false',
+      audio: process.env.ALLOW_AUDIO !== 'false',
+      archives: process.env.ALLOW_ARCHIVES !== 'false',
+      other: process.env.ALLOW_OTHER !== 'false',
+    },
+    maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '15728640', 10),
   });
 
   // 4. OIDC settings

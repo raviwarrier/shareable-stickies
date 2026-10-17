@@ -19,6 +19,13 @@ import {
   X,
   RefreshCw,
   Globe,
+  FileText,
+  FileCode,
+  Image,
+  Video,
+  Music2,
+  Archive,
+  FileQuestion,
 } from 'lucide-react';
 
 interface AdminSettingsModalProps {
@@ -81,6 +88,26 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
   const [testingStorage, setTestingStorage] = useState(false);
   const [storageTestResult, setStorageTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
+  // 6. File Type Categories & Max Size
+  const [fileTypeCategories, setFileTypeCategories] = useState<{
+    documents: boolean;
+    code: boolean;
+    images: boolean;
+    video: boolean;
+    audio: boolean;
+    archives: boolean;
+    other: boolean;
+  }>({
+    documents: true,
+    code: true,
+    images: true,
+    video: true,
+    audio: true,
+    archives: true,
+    other: true,
+  });
+  const [maxFileSizeMB, setMaxFileSizeMB] = useState(15);
+
   // 5. Admin Account Credentials
   const [adminUsername, setAdminUsername] = useState(currentUser.username);
   const [currentAdminPassword, setCurrentAdminPassword] = useState('');
@@ -129,6 +156,13 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
         if (data.adminUser?.username) {
           setAdminUsername(data.adminUser.username);
         }
+
+        if (data.fileTypeCategories) {
+          setFileTypeCategories(data.fileTypeCategories);
+        }
+        if (data.maxFileSize) {
+          setMaxFileSizeMB(Math.round(data.maxFileSize / 1024 / 1024));
+        }
       })
       .catch((err) => {
         setStatusMessage({ type: 'error', text: err.message || 'Failed to load settings' });
@@ -176,6 +210,8 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
           allowedDomains: oidcAllowedDomains.trim() || '*',
           requireOidcOnly: oidcRequireOnly,
         },
+        fileTypeCategories,
+        maxFileSize: maxFileSizeMB * 1024 * 1024,
       });
 
       // Synchronize active theme if updated
@@ -790,10 +826,83 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                         </div>
                         <p className="text-xs text-[var(--sg-text-muted)]">
                           Attachments are served via zero-knowledge static endpoints with path traversal sanitization.
-                          Max attachment size: {DEFAULT_MAX_FILE_SIZE_MB}MB per file. Unlimited files per sticky. Executables blocked.
+                          Max attachment size: {maxFileSizeMB}MB per file. Unlimited files per sticky. Executables blocked.
                         </p>
                       </div>
                     )}
+
+                    {/* File Type Categories */}
+                    <div className="p-3.5 rounded-md solid-glass-panel border border-[var(--sg-panel-border)] flex flex-col gap-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-semibold text-[var(--sg-text)]">Allowed File Categories</span>
+                        <span className="text-[10px] text-[var(--sg-text-muted)]">Executables always blocked</span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5">
+                        {[
+                          { key: 'documents', label: 'Documents', icon: <FileText className="w-3 h-3" /> },
+                          { key: 'code', label: 'Code', icon: <FileCode className="w-3 h-3" /> },
+                          { key: 'images', label: 'Images', icon: <Image className="w-3 h-3" /> },
+                          { key: 'video', label: 'Video', icon: <Video className="w-3 h-3" /> },
+                          { key: 'audio', label: 'Audio', icon: <Music2 className="w-3 h-3" /> },
+                          { key: 'archives', label: 'Archives', icon: <Archive className="w-3 h-3" /> },
+                          { key: 'other', label: 'Other', icon: <FileQuestion className="w-3 h-3" /> },
+                        ].map((cat) => (
+                          <div
+                            key={cat.key}
+                            className="flex items-center justify-between p-1.5 rounded-md cursor-pointer transition border"
+                            style={{
+                              borderColor: fileTypeCategories[cat.key as keyof typeof fileTypeCategories]
+                                ? 'var(--sg-btn-active-border)'
+                                : 'var(--sg-panel-border)',
+                              backgroundColor: fileTypeCategories[cat.key as keyof typeof fileTypeCategories]
+                                ? 'rgba(255, 255, 255, 0.05)'
+                                : 'transparent',
+                            }}
+                            onClick={() =>
+                              setFileTypeCategories({
+                                ...fileTypeCategories,
+                                [cat.key]: !fileTypeCategories[cat.key as keyof typeof fileTypeCategories],
+                              })
+                            }
+                          >
+                            <div className="flex items-center gap-1">
+                              {cat.icon}
+                              <span className="text-[10px] text-[var(--sg-text)] font-medium">{cat.label}</span>
+                            </div>
+                            <div
+                              className={`w-3 h-3 rounded border transition ${
+                                fileTypeCategories[cat.key as keyof typeof fileTypeCategories]
+                                  ? 'bg-[var(--sg-btn-primary-bg)] border-[var(--sg-btn-active-border)]'
+                                  : 'border-[var(--sg-panel-border)] bg-transparent'
+                              }`}
+                            >
+                              {fileTypeCategories[cat.key as keyof typeof fileTypeCategories] && (
+                                <Check className="w-2 h-2" />
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Max File Size */}
+                    <div className="p-3.5 rounded-md solid-glass-panel border border-[var(--sg-panel-border)] flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-xs font-semibold text-[var(--sg-text)]">Max File Size (MB)</span>
+                          <span className="text-[10px] text-[var(--sg-text-muted)]">Per file attachment size limit</span>
+                        </div>
+                        <input
+                          type="number"
+                          value={maxFileSizeMB}
+                          onChange={(e) => setMaxFileSizeMB(parseInt(e.target.value) || 1)}
+                          min="1"
+                          max="1000"
+                          step="1"
+                          className="solid-glass-input rounded-md px-3 py-2 text-[var(--sg-input-text)] outline-none text-xs font-mono w-20"
+                        />
+                      </div>
+                    </div>
 
                     {storageDriver === 'cloudinary' && (
                       <div className="p-3.5 rounded-md solid-glass-panel border border-[var(--sg-panel-border)] flex flex-col gap-3">

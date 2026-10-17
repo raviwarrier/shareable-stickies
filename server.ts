@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import multer from 'multer';
 import dotenv from 'dotenv';
-import { db, UserRecord } from './server/db.js';
+import { db, UserRecord, FileTypeCategories } from './server/db.js';
 import { getStorageDriver, StoredAttachment } from './server/storage/storageDriver.js';
 
 dotenv.config();
@@ -89,19 +89,57 @@ function isExecutable(filename: string, mimetype: string): boolean {
 }
 
 // Configure multer in memory so driver can handle destination (unlimited files per paste)
+// File type validation is done dynamically in the create-paste route using DB settings
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: MAX_FILE_SIZE,
   },
-  fileFilter: (_req, file, cb) => {
-    if (isExecutable(file.originalname, file.mimetype)) {
-      cb(new Error('Executable files are not allowed for security reasons'));
-    } else {
-      cb(null, true);
-    }
-  },
 });
+
+// File type category extensions for admin-configurable filtering
+const FILE_TYPE_EXTENSIONS: Record<string, string[]> = {
+  documents: ['.pdf', '.doc', '.docx', '.txt', '.rtf', '.odt', '.pages'],
+  code: ['.js', '.ts', '.tsx', '.jsx', '.py', '.java', '.cpp', '.cc', '.cxx', '.c', '.h', '.hpp',
+    '.cs', '.go', '.rb', '.php', '.rs', '.swift', '.kt', '.scala', '.r', '.m', '.mm', '.sh', '.bat', '.ps1',
+    '.sql', '.html', '.css', '.xml', '.json', '.yaml', '.yml', '.toml', '.md', '.rst'],
+  images: ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.webp', '.ico', '.tiff', '.tif', '.heic'],
+  video: ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.mkv', '.webm', '.m4v', '.3gp', '.ogv'],
+  audio: ['.mp3', '.wav', '.flac', '.aac', '.ogg', '.wma', '.m4a', '.aiff'],
+  archives: ['.zip', '.rar', '.7z', '.tar', '.gz', '.bz2', '.xz', '.cab', '.iso'],
+};
+
+function getAllowedExtensions(categories: FileTypeCategories): Set<string> {
+  const allowed = new Set<string>();
+  if (categories.documents) FILE_TYPE_EXTENSIONS.documents.forEach(ext => allowed.add(ext));
+  if (categories.code) FILE_TYPE_EXTENSIONS.code.forEach(ext => allowed.add(ext));
+  if (categories.images) FILE_TYPE_EXTENSIONS.images.forEach(ext => allowed.add(ext));
+  if (categories.video) FILE_TYPE_EXTENSIONS.video.forEach(ext => allowed.add(ext));
+  if (categories.audio) FILE_TYPE_EXTENSIONS.audio.forEach(ext => allowed.add(ext));
+  if (categories.archives) FILE_TYPE_EXTENSIONS.archives.forEach(ext => allowed.add(ext));
+  if (categories.other) {
+    // 'other' means allow anything not in another category or executable
+  }
+  return allowed;
+}
+
+function isFileTypeAllowed(filename: string, categories: FileTypeCategories): boolean {
+  // Executables are always blocked regardless of category
+  if (isExecutable(filename, '')) return false;
+
+  const dotIdx = filename.lastIndexOf('.');
+  const ext = dotIdx >= 0 ? filename.toLowerCase().substring(dotIdx) : '';
+
+  if (!ext) return categories.other; // no extension = other category
+
+  const allowed = getAllowedExtensions(categories);
+
+  if (allowed.size === 0) return false; // no categories enabled = nothing allowed
+
+  if (categories.other) return true; // 'other' category allows everything non-executable
+
+  return allowed.has(ext);
+}
 
 // Extend Express Request to include user
 interface AuthenticatedRequest extends Request {
@@ -271,10 +309,26 @@ app.post('/api/pastes', upload.array('attachments'), async (req: AuthenticatedRe
       return res.status(400).json({ error: 'Paste content cannot be empty' });
     }
 
-    // Process uploaded attachments
+    // Process uploaded attachments with dynamic file type validation
+    const categories = settings.fileTypeCategories || {
+      documents: true, code: true, images: true, video: true,
+      audio: true, archives: true, other: true,
+    };
+    const maxFileSize = settings.maxFileSize || MAX_FILE_SIZE;
+
     const files = (req.files as Express.Multer.File[]) || [];
     const savedAttachments: StoredAttachment[] = [];
     for (const file of files) {
+      if (file.size > maxFileSize) {
+        return res.status(400).json({
+          error: `File "${file.originalname}" exceeds maximum size of ${Math.round(maxFileSize / 1024 / 1024)}MB`,
+        });
+      }
+      if (!isFileTypeAllowed(file.originalname, categories)) {
+        return res.status(400).json({
+          error: `File type not allowed: "${file.originalname}". Contact administrator to enable this file type.`,
+        });
+      }
       const stored = await storageDriver.saveAttachment(file);
       savedAttachments.push(stored);
     }
@@ -628,6 +682,11 @@ app.get('/api/config', (_req, res) => {
     oidcProviderName: oidc.providerName || 'Single Sign-On',
     requireOidcOnly: !!oidc.requireOidcOnly,
     allowedDomains: oidc.allowedDomains || '*',
+    fileTypeCategories: settings.fileTypeCategories || {
+      documents: true, code: true, images: true, video: true,
+      audio: true, archives: true, other: true,
+    },
+    maxFileSize: settings.maxFileSize || MAX_FILE_SIZE,
   });
 });
 
