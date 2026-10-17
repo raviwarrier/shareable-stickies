@@ -808,8 +808,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onEditPa
               {/* Client ID & Secret Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-medium text-[var(--sg-text-muted)]">Client ID</label>
+                  <label className="text-[11px] font-medium text-[var(--sg-text-muted)]" htmlFor="oidc-client-id">Client ID</label>
                   <input
+                    id="oidc-client-id"
                     type="text"
                     value={oidcConfig.clientId}
                     onChange={(e) => setOidcConfig({ ...oidcConfig, clientId: e.target.value })}
@@ -818,8 +819,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onEditPa
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-medium text-[var(--sg-text-muted)]">Client Secret</label>
+                  <label className="text-[11px] font-medium text-[var(--sg-text-muted)]" htmlFor="oidc-client-secret">Client Secret</label>
                   <input
+                    id="oidc-client-secret"
                     type="password"
                     value={oidcConfig.clientSecret}
                     onChange={(e) => setOidcConfig({ ...oidcConfig, clientSecret: e.target.value })}
@@ -831,11 +833,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onEditPa
 
               {/* Allowed Email Domains */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium text-[var(--sg-text-muted)] flex items-center justify-between">
+                <label className="text-[11px] font-medium text-[var(--sg-text-muted)] flex items-center justify-between" htmlFor="oidc-allowed-domains">
                   <span>Allowed Email Domains</span>
                   <span className="text-[11px] text-[var(--sg-text-muted)] opacity-70">* for all domains</span>
                 </label>
                 <input
+                  id="oidc-allowed-domains"
                   type="text"
                   value={oidcConfig.allowedDomains}
                   onChange={(e) => setOidcConfig({ ...oidcConfig, allowedDomains: e.target.value })}
