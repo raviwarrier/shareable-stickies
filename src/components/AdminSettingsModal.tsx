@@ -1044,7 +1044,7 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                           <input
                             type="number"
                             value={maxFileSizeMB}
-                            onChange={(e) => setMaxFileSizeMB(Math.max(1, parseInt(e.target.value) || 1))}
+                            onChange={(e) => setMaxFileSizeMB(Math.max(1, Number.parseInt(e.target.value) || 1))}
                             min="1"
                             max="500"
                             step="1"

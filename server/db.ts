@@ -911,32 +911,37 @@ class Database {
           archives: process.env.ALLOW_ARCHIVES !== 'false',
           other: process.env.ALLOW_OTHER !== 'false',
         },
-        maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '15728640', 10),
+        maxFileSize: Number.parseInt(process.env.MAX_FILE_SIZE || '15728640', 10),
       };
       this.persist();
     }
 
-    // Backfill defaults if existing database file lacked fields
-    if (!this.schema.appSettings.defaultTheme) {
+    this.backfillAppSettingsDefaults();
+    return this.schema.appSettings;
+  }
+
+  private backfillAppSettingsDefaults(): void {
+    const settings = this.schema.appSettings!;
+    if (!settings.defaultTheme) {
       const mode = (process.env.DEFAULT_THEME || process.env.THEME_MODE || 'dark') as 'dark' | 'light' | 'sepia';
-      this.schema.appSettings.defaultTheme = ['dark', 'light', 'sepia'].includes(mode) ? mode : 'dark';
+      settings.defaultTheme = ['dark', 'light', 'sepia'].includes(mode) ? mode : 'dark';
     }
-    if (this.schema.appSettings.allowAnonymousCreation === undefined) {
-      this.schema.appSettings.allowAnonymousCreation = process.env.ALLOW_ANONYMOUS_CREATION === 'true' || process.env.ALLOW_PUBLIC_STICKIES === 'true';
+    if (settings.allowAnonymousCreation === undefined) {
+      settings.allowAnonymousCreation = process.env.ALLOW_ANONYMOUS_CREATION === 'true' || process.env.ALLOW_PUBLIC_STICKIES === 'true';
     }
-    if (!this.schema.appSettings.storageDriver) {
+    if (!settings.storageDriver) {
       const drv = (process.env.STORAGE_DRIVER || 'local') as 'local' | 'cloudinary' | 's3';
-      this.schema.appSettings.storageDriver = ['local', 'cloudinary', 's3'].includes(drv) ? drv : 'local';
+      settings.storageDriver = ['local', 'cloudinary', 's3'].includes(drv) ? drv : 'local';
     }
-    if (!this.schema.appSettings.cloudinaryConfig) {
-      this.schema.appSettings.cloudinaryConfig = {
+    if (!settings.cloudinaryConfig) {
+      settings.cloudinaryConfig = {
         cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
         apiKey: process.env.CLOUDINARY_API_KEY || '',
         apiSecret: process.env.CLOUDINARY_API_SECRET || '',
       };
     }
-    if (!this.schema.appSettings.s3Config) {
-      this.schema.appSettings.s3Config = {
+    if (!settings.s3Config) {
+      settings.s3Config = {
         bucketName: process.env.AWS_BUCKET_NAME || '',
         region: process.env.AWS_REGION || 'us-east-1',
         accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
@@ -944,8 +949,8 @@ class Database {
         endpoint: process.env.AWS_ENDPOINT || '',
       };
     }
-    if (!this.schema.appSettings.fileTypeCategories) {
-      this.schema.appSettings.fileTypeCategories = {
+    if (!settings.fileTypeCategories) {
+      settings.fileTypeCategories = {
         documents: process.env.ALLOW_DOCUMENTS !== 'false',
         code: process.env.ALLOW_CODE !== 'false',
         images: process.env.ALLOW_IMAGES !== 'false',
@@ -955,13 +960,10 @@ class Database {
         other: process.env.ALLOW_OTHER !== 'false',
       };
     }
-    if (!this.schema.appSettings.maxFileSize) {
-      this.schema.appSettings.maxFileSize = parseInt(process.env.MAX_FILE_SIZE || '15728640', 10);
+    if (!settings.maxFileSize) {
+      settings.maxFileSize = Number.parseInt(process.env.MAX_FILE_SIZE || '15728640', 10);
     }
-
-    return this.schema.appSettings;
   }
-
   public updateAppSettings(settings: Partial<AppSettingsRecord>): AppSettingsRecord {
     const current = this.getAppSettings();
     this.schema.appSettings = {

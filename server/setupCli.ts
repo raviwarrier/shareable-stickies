@@ -50,7 +50,7 @@ export function runCliSync() {
       archives: process.env.ALLOW_ARCHIVES !== 'false',
       other: process.env.ALLOW_OTHER !== 'false',
     },
-    maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '15728640', 10),
+    maxFileSize: Number.parseInt(process.env.MAX_FILE_SIZE || '15728640', 10),
   });
 
   // 4. OIDC settings

@@ -21,9 +21,9 @@ dotenv.config();
  */
 function sanitizeInput(value: unknown): string {
   if (value === null || value === undefined) return '';
-  if (typeof value !== 'string') return String(value);
+  if (typeof value !== 'string') return String.prototype.toString.call(value);
   return value
-    .replace(/\0/g, '')                       // remove null bytes
+    .replaceAll('\\0', '')                      // remove null bytes
     .replace(/[\x00-\x1f\x7f-\x9f]/g, '');   // remove control characters
 }
 
@@ -52,7 +52,7 @@ app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
 // Maximum file size per attachment (configurable via .env, default 15MB)
-const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE || '15728640', 10);
+const MAX_FILE_SIZE = Number.parseInt(process.env.MAX_FILE_SIZE || '15728640', 10);
 
 // Executable file extensions to block
 const EXECUTABLE_EXTENSIONS = new Set([
@@ -90,10 +90,12 @@ function isExecutable(filename: string, mimetype: string): boolean {
 
 // Configure multer in memory so driver can handle destination (unlimited files per paste)
 // File type and max size validation is done dynamically in the create-paste route using DB settings
+// Max file size is capped at 100MB as a hard upper bound for upload buffer safety
+const MAX_UPLOAD_BUFFER = 100 * 1024 * 1024; // 100MB hard cap for multer buffer
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 250 * 1024 * 1024, // 250MB buffer limit; actual limit enforced dynamically per admin settings
+    fileSize: MAX_UPLOAD_BUFFER,
   },
 });
 
@@ -299,7 +301,6 @@ app.post('/api/pastes', upload.array('attachments'), async (req: AuthenticatedRe
       burnAfterReading,
     } = req.body;
 
-    const safeTitle = sanitizeInput(title || '');
     const safeCustomSlug = customSlug ? sanitizeSlug(customSlug) : undefined;
     const safeSyntax = sanitizeInput(syntax || 'plaintext') as 'plaintext' | 'markdown' | 'javascript' | 'typescript' | 'python' | 'rust' | 'go' | 'java' | 'c' | 'cpp' | 'csharp' | 'php' | 'ruby' | 'bash' | 'powershell' | 'sql' | 'yaml' | 'json' | 'html' | 'csv' | 'diff';
     const safeExpiration = sanitizeInput(expiration || 'never');
@@ -589,7 +590,7 @@ app.get('/api/admin/settings', (req: AuthenticatedRequest, res: Response) => {
       archives: true,
       other: true,
     },
-    maxFileSize: settings.maxFileSize || parseInt(process.env.MAX_FILE_SIZE || '15728640', 10),
+    maxFileSize: settings.maxFileSize || Number.parseInt(process.env.MAX_FILE_SIZE || '15728640', 10),
     adminUser: {
       id: req.user.id,
       username: req.user.username,
