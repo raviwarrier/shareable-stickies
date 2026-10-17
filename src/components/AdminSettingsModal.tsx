@@ -296,11 +296,11 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 sm:p-5 backdrop-blur-sm text-sm"
+      className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-3 sm:p-5 backdrop-blur-sm text-sm"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-4xl max-h-[90vh] flex flex-col rounded-lg solid-glass-panel overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-150"
+        className="w-full max-w-4xl max-h-[90vh] flex flex-col rounded-lg solid-glass-panel overflow-y-auto shadow-2xl animate-in fade-in zoom-in-95 duration-150"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--sg-panel-border)] solid-glass-subbar shrink-0">
