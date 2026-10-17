@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
+﻿import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
 
 export interface StoredAttachment {
   id: string;
@@ -83,10 +83,10 @@ export class LocalStorageDriver implements StorageDriver {
 }
 
 export class CloudinaryStorageDriver implements StorageDriver {
-  private fallbackLocal: LocalStorageDriver;
-  private cloudName: string;
-  private apiKey: string;
-  private apiSecret: string;
+  private readonly fallbackLocal: LocalStorageDriver;
+  private readonly cloudName: string;
+  private readonly apiKey: string;
+  private readonly apiSecret: string;
 
   constructor(config?: { cloudName?: string; apiKey?: string; apiSecret?: string }) {
     this.fallbackLocal = new LocalStorageDriver();
@@ -116,7 +116,7 @@ export class CloudinaryStorageDriver implements StorageDriver {
     try {
       const timestamp = Math.round(Date.now() / 1000);
       const signaturePayload = `timestamp=${timestamp}${this.apiSecret}`;
-      const signature = crypto.createHash('sha1').update(signaturePayload).digest('hex');
+      const signature = crypto.createHash('sha256').update(signaturePayload).digest('hex');
 
       const formData = new FormData();
       const rawBuffer = file.buffer || fs.readFileSync(file.path);
@@ -168,9 +168,10 @@ export class CloudinaryStorageDriver implements StorageDriver {
     }
     try {
       const pingUrl = `https://api.cloudinary.com/v1_1/${encodeURIComponent(this.cloudName)}/ping`;
+      const creds = `${this.apiKey}:${this.apiSecret}`;
       const res = await fetch(pingUrl, {
         headers: {
-          Authorization: `Basic ${Buffer.from(`${this.apiKey}:${this.apiSecret}`).toString('base64')}`,
+          Authorization: `Basic ${Buffer.from(creds).toString('base64')}`,
         },
       });
       if (res.ok) {
@@ -184,12 +185,12 @@ export class CloudinaryStorageDriver implements StorageDriver {
 }
 
 export class S3StorageDriver implements StorageDriver {
-  private fallbackLocal: LocalStorageDriver;
-  private bucket: string;
-  private region: string;
-  private accessKeyId: string;
-  private secretAccessKey: string;
-  private endpoint?: string;
+  private readonly fallbackLocal: LocalStorageDriver;
+  private readonly bucket: string;
+  private readonly region: string;
+  private readonly accessKeyId: string;
+  private readonly secretAccessKey: string;
+  private readonly endpoint?: string;
 
   constructor(config?: {
     bucketName?: string;
@@ -218,7 +219,6 @@ export class S3StorageDriver implements StorageDriver {
       const key = `uploads/${id}${ext}`;
       
       const host = this.endpoint ? new URL(this.endpoint).host : `${this.bucket}.s3.${this.region}.amazonaws.com`;
-      const s3Url = this.endpoint ? `${this.endpoint.replace(/\/$/, '')}/${this.bucket}/${key}` : `https://${host}/${key}`;
 
       // Also save locally as mirror/cache for offline resilience
       const localResult = await this.fallbackLocal.saveAttachment(file);
@@ -305,3 +305,4 @@ export class DynamicStorageManager implements StorageDriver {
 export function getStorageDriver(): StorageDriver {
   return new DynamicStorageManager();
 }
+

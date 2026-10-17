@@ -65,7 +65,7 @@ export default function App() {
     getAppConfig().then((cfg) => {
       setAppConfig(cfg);
       if (!localStorage.getItem('app-theme') && cfg.defaultTheme) {
-        document.documentElement.setAttribute('data-theme', cfg.defaultTheme);
+        document.documentElement.dataset.theme = cfg.defaultTheme;
       }
     }).catch(() => {});
     checkHash();

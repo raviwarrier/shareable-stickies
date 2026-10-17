@@ -31,7 +31,8 @@ export function generatePassphrase(): string {
   const wordsPool = [...DICTIONARY_WORDS];
 
   for (let i = 0; i < 5; i++) {
-    const idx = Math.floor(Math.random() * wordsPool.length);
+    const buf = crypto.getRandomValues(new Uint32Array(1));
+    const idx = buf[0] % wordsPool.length;
     const word = wordsPool[idx];
     // Ensure at least one character of every word is capitalized
     const capitalized = word.charAt(0).toUpperCase() + word.slice(1);
@@ -39,7 +40,8 @@ export function generatePassphrase(): string {
     wordsPool.splice(idx, 1);
   }
 
-  const digit = Math.floor(Math.random() * 10).toString();
+  const digitBuf = crypto.getRandomValues(new Uint32Array(1));
+  const digit = (digitBuf[0] % 10).toString();
   chosenWords.push(digit);
 
   return chosenWords.join('-');
@@ -50,8 +52,11 @@ export function generatePassphrase(): string {
  */
 export function generateSlug(): string {
   const wordsPool = ['quick', 'note', 'code', 'draft', 'doc', 'memo', 'clip', 'share', 'paste', 'text', 'snap', 'byte', 'log'];
-  const w1 = wordsPool[Math.floor(Math.random() * wordsPool.length)];
-  const w2 = wordsPool[Math.floor(Math.random() * wordsPool.length)];
-  const num = Math.floor(100 + Math.random() * 900);
+  const buf1 = crypto.getRandomValues(new Uint32Array(1));
+  const w1 = wordsPool[buf1[0] % wordsPool.length];
+  const buf2 = crypto.getRandomValues(new Uint32Array(1));
+  const w2 = wordsPool[buf2[0] % wordsPool.length];
+  const buf3 = crypto.getRandomValues(new Uint32Array(1));
+  const num = 100 + (buf3[0] % 900);
   return `${w1}-${w2}-${num}`;
 }

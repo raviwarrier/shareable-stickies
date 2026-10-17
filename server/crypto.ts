@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 // Default fallback secret for development if none configured
 const DEFAULT_SECRET = 'shareable-stickies-default-secure-key-32bytes!';

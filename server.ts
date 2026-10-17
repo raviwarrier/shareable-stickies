@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import multer from 'multer';
 import dotenv from 'dotenv';
 import { db, UserRecord, FileTypeCategories } from './server/db.js';
@@ -44,6 +44,7 @@ function sanitizeSlug(value: unknown): string {
 }
 
 const app = express();
+app.disable('x-powered-by');
 const PORT = process.env.PORT || 3000;
 const storageDriver = getStorageDriver();
 
@@ -318,21 +319,15 @@ app.post('/api/pastes', upload.array('attachments'), async (req: AuthenticatedRe
     const maxFileSize = settings.maxFileSize || MAX_FILE_SIZE;
 
     const files = (req.files as Express.Multer.File[]) || [];
-    const savedAttachments: StoredAttachment[] = [];
-    for (const file of files) {
+    const savedAttachments = await Promise.all(files.map(async (file) => {
       if (file.size > maxFileSize) {
-        return res.status(400).json({
-          error: `File "${file.originalname}" exceeds maximum size of ${Math.round(maxFileSize / 1024 / 1024)}MB`,
-        });
+        throw new Error(`File "${file.originalname}" exceeds maximum size of ${Math.round(maxFileSize / 1024 / 1024)}MB`);
       }
       if (!isFileTypeAllowed(file.originalname, categories)) {
-        return res.status(400).json({
-          error: `File type not allowed: "${file.originalname}". Contact administrator to enable this file type.`,
-        });
+        throw new Error(`File type not allowed: "${file.originalname}". Contact administrator to enable this file type.`);
       }
-      const stored = await storageDriver.saveAttachment(file);
-      savedAttachments.push(stored);
-    }
+      return storageDriver.saveAttachment(file);
+    }));
 
     const result = db.createPaste({
       title,
@@ -495,14 +490,14 @@ app.put('/api/pastes/:id', (req: AuthenticatedRequest, res: Response) => {
 
 // --- Admin Controls ---
 app.get('/api/admin/stats', (req: AuthenticatedRequest, res: Response) => {
-  if (!req.user || req.user.role !== 'admin') {
+  if (req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }
   res.json(db.getStats());
 });
 
 app.post('/api/admin/toggle-demo', (req: AuthenticatedRequest, res: Response) => {
-  if (!req.user || req.user.role !== 'admin') {
+  if (req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }
   const { enable } = req.body;
@@ -558,7 +553,7 @@ app.post('/api/auth/oidc/login', (req, res) => {
 });
 
 app.get('/api/admin/settings', (req: AuthenticatedRequest, res: Response) => {
-  if (!req.user || req.user.role !== 'admin') {
+  if (req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }
   const settings = db.getAppSettings();
@@ -600,7 +595,7 @@ app.get('/api/admin/settings', (req: AuthenticatedRequest, res: Response) => {
 });
 
 app.post('/api/admin/settings', (req: AuthenticatedRequest, res: Response) => {
-  if (!req.user || req.user.role !== 'admin') {
+  if (req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }
   try {
@@ -753,9 +748,12 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, () => {
-    console.log(`[Shareable Stickies] Server running on port ${PORT} (NODE_ENV=${process.env.NODE_ENV || 'development'})`);
+  await new Promise<void>((resolve) => {
+    app.listen(PORT, () => {
+      console.log(`[Shareable Stickies] Server running on port ${PORT} (NODE_ENV=${process.env.NODE_ENV || 'development'})`);
+      resolve();
+    });
   });
 }
 
-startServer();
+await startServer();

@@ -5,7 +5,6 @@ import { highlightCode } from '../utils/syntaxHighlighter';
 import {
   Copy,
   ExternalLink,
-  Eye,
   Search,
   Check,
   Loader2,

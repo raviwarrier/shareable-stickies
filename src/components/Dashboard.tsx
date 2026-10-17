@@ -897,7 +897,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onEditPa
           currentTheme={((typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) as any) || 'dark'}
           onThemeChange={(newTheme) => {
             if (typeof document !== 'undefined') {
-              document.documentElement.setAttribute('data-theme', newTheme);
+              document.documentElement.dataset.theme = newTheme;
               localStorage.setItem('app-theme', newTheme);
             }
           }}

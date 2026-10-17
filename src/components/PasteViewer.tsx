@@ -585,6 +585,9 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
       {selectedImage && (
         <div
           onClick={() => setSelectedImage(null)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedImage(null); }}
+          role="button"
+          tabIndex={0}
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 cursor-zoom-out"
         >
           <img

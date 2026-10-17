@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { User } from '../types';
 import { validateCustomSlug } from '../api';
 import { QRCodeModal } from './QRCodeModal';
@@ -140,16 +140,16 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
       : `${window.location.origin}${lastCreatedUrl.startsWith('/') ? '' : '/'}${lastCreatedUrl}`
     : '';
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     if (!fullShareUrl) return;
-    navigator.clipboard.writeText(fullShareUrl);
+    await navigator.clipboard.writeText(fullShareUrl);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  const handleCopyPassphrase = () => {
+  const handleCopyPassphrase = async () => {
     if (!password) return;
-    navigator.clipboard.writeText(password);
+    await navigator.clipboard.writeText(password);
     setCopiedPassphrase(true);
     setTimeout(() => setCopiedPassphrase(false), 2000);
   };
@@ -275,10 +275,10 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
 
             {/* Expiration option */}
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-[var(--sg-text)] flex items-center gap-2">
+              <span className="text-sm font-medium text-[var(--sg-text)] flex items-center gap-2">
                 <Clock className="w-4 h-4 text-[var(--sg-text-muted)]" />
                 This self destructs
-              </label>
+              </span>
               <select
                 value={burnAfterReading ? 'burn' : expiration}
                 onChange={(e) => {
@@ -305,10 +305,10 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
 
             {/* Visibility options */}
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-[var(--sg-text)] flex items-center gap-2">
+              <span className="text-sm font-medium text-[var(--sg-text)] flex items-center gap-2">
                 <Eye className="w-4 h-4 text-[var(--sg-text-muted)]" />
                 Who can see this?
-              </label>
+              </span>
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { key: 'public', label: 'Everyone' },
@@ -319,6 +319,9 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
                     key={key}
                     type="button"
                     onClick={() => setVisibility(key as any)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setVisibility(key as any); }}
+                    role="button"
+                    tabIndex={0}
                     className={`py-2 px-1.5 rounded-md text-center transition cursor-pointer text-xs ${
                       visibility === key
                         ? 'solid-glass-btn-active text-[var(--sg-text)]'

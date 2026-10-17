@@ -850,8 +850,9 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                         <div className="text-xs font-semibold text-[var(--sg-text)]">Cloudinary Credentials</div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div className="flex flex-col gap-1">
-                            <label className="text-[11px] text-[var(--sg-text-muted)] font-medium">Org ID / Cloud Name</label>
+                            <label htmlFor="cloudinary-cloud-name" className="text-[11px] text-[var(--sg-text-muted)] font-medium">Org ID / Cloud Name</label>
                             <input
+                              id="cloudinary-cloud-name"
                               type="text"
                               value={cloudName}
                               onChange={(e) => setCloudName(e.target.value)}
@@ -861,8 +862,9 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                           </div>
 
                           <div className="flex flex-col gap-1">
-                            <label className="text-[11px] text-[var(--sg-text-muted)] font-medium">API Key</label>
+                            <label htmlFor="cloudinary-api-key" className="text-[11px] text-[var(--sg-text-muted)] font-medium">API Key</label>
                             <input
+                              id="cloudinary-api-key"
                               type="text"
                               value={cloudApiKey}
                               onChange={(e) => setCloudApiKey(e.target.value)}
@@ -872,9 +874,10 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                           </div>
 
                           <div className="flex flex-col gap-1">
-                            <label className="text-[11px] text-[var(--sg-text-muted)] font-medium">API Secret</label>
+                            <label htmlFor="cloudinary-api-secret" className="text-[11px] text-[var(--sg-text-muted)] font-medium">API Secret</label>
                             <div className="flex items-center rounded-md solid-glass-input overflow-hidden">
                               <input
+                                id="cloudinary-api-secret"
                                 type={showCloudSecret ? 'text' : 'password'}
                                 value={cloudApiSecret}
                                 onChange={(e) => setCloudApiSecret(e.target.value)}
@@ -899,8 +902,9 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                         <div className="text-xs font-semibold text-[var(--sg-text)]">Amazon S3 Configuration</div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div className="flex flex-col gap-1">
-                            <label className="text-[11px] text-[var(--sg-text-muted)] font-medium">Bucket Name</label>
+                            <label htmlFor="s3-bucket-name" className="text-[11px] text-[var(--sg-text-muted)] font-medium">Bucket Name</label>
                             <input
+                              id="s3-bucket-name"
                               type="text"
                               value={s3Bucket}
                               onChange={(e) => setS3Bucket(e.target.value)}
@@ -910,8 +914,9 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                           </div>
 
                           <div className="flex flex-col gap-1">
-                            <label className="text-[11px] text-[var(--sg-text-muted)] font-medium">Region</label>
+                            <label htmlFor="s3-region" className="text-[11px] text-[var(--sg-text-muted)] font-medium">Region</label>
                             <input
+                              id="s3-region"
                               type="text"
                               value={s3Region}
                               onChange={(e) => setS3Region(e.target.value)}
@@ -921,8 +926,9 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                           </div>
 
                           <div className="flex flex-col gap-1">
-                            <label className="text-[11px] text-[var(--sg-text-muted)] font-medium">AWS Access Key ID</label>
+                            <label htmlFor="s3-access-key" className="text-[11px] text-[var(--sg-text-muted)] font-medium">AWS Access Key ID</label>
                             <input
+                              id="s3-access-key"
                               type="text"
                               value={s3AccessKey}
                               onChange={(e) => setS3AccessKey(e.target.value)}
@@ -932,9 +938,10 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                           </div>
 
                           <div className="flex flex-col gap-1">
-                            <label className="text-[11px] text-[var(--sg-text-muted)] font-medium">AWS Secret Access Key</label>
+                            <label htmlFor="s3-secret-key" className="text-[11px] text-[var(--sg-text-muted)] font-medium">AWS Secret Access Key</label>
                             <div className="flex items-center rounded-md solid-glass-input overflow-hidden">
                               <input
+                                id="s3-secret-key"
                                 type={showS3Secret ? 'text' : 'password'}
                                 value={s3SecretKey}
                                 onChange={(e) => setS3SecretKey(e.target.value)}

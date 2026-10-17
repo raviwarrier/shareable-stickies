@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
-import path from 'path';
-import fs from 'fs';
+import path from 'node:path';
+import fs from 'node:fs';
 import { db } from './db.js';
 
 dotenv.config();
@@ -70,7 +70,7 @@ export function runCliSync() {
 
   if (adminPass) {
     // If admin exists, update; if not, create
-    const stats = db.getStats();
+    db.getStats();
     console.log(`[Setup CLI] Ensured admin user "${adminUser}" is configured.`);
   }
 

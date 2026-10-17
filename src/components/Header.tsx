@@ -87,7 +87,7 @@ export const Header: React.FC<HeaderProps> = ({
   });
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.dataset.theme = theme;
     localStorage.setItem('app-theme', theme);
   }, [theme]);
 
@@ -242,13 +242,7 @@ export const Header: React.FC<HeaderProps> = ({
               title={`Current theme: ${theme}. Click to switch theme.`}
               aria-label={`Current theme: ${theme}. Click to switch theme.`}
             >
-              {theme === 'dark' ? (
-                <Moon className="w-4 h-4 text-slate-300" />
-              ) : theme === 'light' ? (
-                <Sun className="w-4 h-4 text-slate-700" />
-              ) : (
-                <BookOpen className="w-4 h-4 text-[#8a6842]" />
-              )}
+              {theme === 'dark' ? <Moon className="w-4 h-4 text-slate-300" /> : theme === 'light' ? <Sun className="w-4 h-4 text-slate-700" /> : <BookOpen className="w-4 h-4 text-[#8a6842]" />}
             </button>
 
             {/* @username dropdown menu */}
@@ -318,7 +312,7 @@ export const Header: React.FC<HeaderProps> = ({
                         type="button"
                         onClick={() => {
                           setUserDropdownOpen(false);
-                          handleLogout();
+                          void handleLogout();
                         }}
                         disabled={loading}
                         className="w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-rose-500 hover:bg-rose-500/10 transition cursor-pointer text-xs disabled:opacity-50"

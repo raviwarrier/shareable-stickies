@@ -1,8 +1,12 @@
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
 import { EncryptedPayload, encryptAtRest, decryptAtRest, hashPassword, verifyPassword } from './crypto.js';
 import { StoredAttachment } from './storage/storageDriver.js';
+
+export type PasteVisibility = 'public' | 'unlisted' | 'private';
+export type AppTheme = 'dark' | 'light' | 'sepia';
+export type StorageDriverType = 'local' | 'cloudinary' | 's3';
 
 export interface PasteRecord {
   id: string;
@@ -14,7 +18,7 @@ export interface PasteRecord {
   hasPassword: boolean;
   passwordHash?: string;
   passwordSalt?: string;
-  visibility: 'public' | 'unlisted' | 'private';
+  visibility: PasteVisibility;
   burnAfterReading: boolean;
   burnViewed: boolean;
   createdAt: number;
@@ -80,9 +84,9 @@ export interface FileTypeCategories {
 }
 
 export interface AppSettingsRecord {
-  defaultTheme: 'dark' | 'light' | 'sepia';
+  defaultTheme: AppTheme;
   allowAnonymousCreation: boolean;
-  storageDriver: 'local' | 'cloudinary' | 's3';
+  storageDriver: StorageDriverType;
   cloudinaryConfig?: CloudinaryConfig;
   s3Config?: S3Config;
   fileTypeCategories: FileTypeCategories;
@@ -103,8 +107,8 @@ const RESERVED_SLUGS = new Set([
 ]);
 
 class Database {
-  private dataDir: string;
-  private dbFile: string;
+  private readonly dataDir: string;
+  private readonly dbFile: string;
   private schema: DatabaseSchema = {
     pastes: {},
     users: {},
@@ -448,7 +452,7 @@ class Database {
       throw new Error('This paste has self-destructed after reading');
     }
 
-    // Check password protection
+  // Check password protection
     if (paste.hasPassword && paste.passwordHash && paste.passwordSalt) {
       const isOwner = options?.user && options.user.id === paste.userId;
       if (!isOwner) {
@@ -1012,7 +1016,7 @@ class Database {
     }
   ): { user: UserRecord; token: string } {
     const user = this.schema.users[adminUserId];
-    if (!user || user.role !== 'admin') {
+    if (user?.role !== 'admin') {
       throw new Error('Unauthorized: Admin account required');
     }
 

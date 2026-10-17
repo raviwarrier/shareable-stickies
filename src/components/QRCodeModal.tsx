@@ -35,8 +35,8 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(url);
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -57,6 +57,9 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
           </div>
           <button
             onClick={onClose}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClose(); }}
+        role="button"
+        tabIndex={0}
             className="p-1 rounded-md solid-glass-btn text-[var(--sg-text-muted)] hover:text-[var(--sg-text)] transition cursor-pointer"
           >
             <X className="w-4 h-4" />
