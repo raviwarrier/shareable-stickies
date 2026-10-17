@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shareable Stickies</title>
+    <meta name="description" content="Self-hostable modern pastebin. For you to use or share with others." />
+    <meta property="og:title" content="Shareable Stickies" />
+    <meta property="og:description" content="Self-hostable modern pastebin. For you to use or share with others." />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet" />
+    <script>
+      // Completely mock Vite HMR WebSocket in preview container to prevent connection failures
+      (function() {
+        if (typeof window !== 'undefined') {
+          const OrigWS = window.WebSocket;
+          if (OrigWS) {
+            window.WebSocket = function(url, protocols) {
+              const urlStr = String(url || '');
+              const protoStr = String(protocols || '');
+              if (protoStr.includes('vite-hmr') || urlStr.includes('token=') || urlStr.includes('vite')) {
+                const target = new EventTarget();
+                target.readyState = 1; // OPEN
+                target.OPEN = 1;
+                target.CLOSED = 3;
+                target.CLOSING = 2;
+                target.CONNECTING = 0;
+                target.send = function() {};
+                target.close = function() {};
+                setTimeout(() => {
+                  try {
+                    target.dispatchEvent(new Event('open'));
+                  } catch (e) {}
+                }, 10);
+                return target;
+              }
+              return new OrigWS(url, protocols);
+            };
+            window.WebSocket.prototype = OrigWS.prototype;
+            window.WebSocket.OPEN = 1;
+            window.WebSocket.CLOSED = 3;
+            window.WebSocket.CLOSING = 2;
+            window.WebSocket.CONNECTING = 0;
+          }
+
+          window.addEventListener('unhandledrejection', function(event) {
+            const errStr = String(event.reason || '') + ' ' + (event.reason?.message || '');
+            if (errStr.includes('WebSocket') || errStr.includes('vite')) {
+              event.preventDefault();
+              event.stopImmediatePropagation();
+            }
+          });
+
+          window.addEventListener('error', function(event) {
+            const errStr = String(event.message || '') + ' ' + (event.filename || '');
+            if (errStr.includes('WebSocket') || errStr.includes('@vite/client')) {
+              event.preventDefault();
+              event.stopImmediatePropagation();
+            }
+          }, true);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

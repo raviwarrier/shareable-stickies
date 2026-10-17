@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  shareable-stickies:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shareable-stickies
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - STORAGE_DRIVER=local
+      - ALLOW_PUBLIC_PASTES=true
+      - ENCRYPTION_SECRET=change-this-production-encryption-secret-32-bytes
+      - UPLOAD_DIR=/app/uploads
+      - DATA_DIR=/app/data
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads

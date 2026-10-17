@@ -1,0 +1,11 @@
+node_modules
+dist
+build
+.git
+data/*.json
+!data/.gitkeep
+uploads/*
+!uploads/.gitkeep
+.env
+.env.local
+*.log

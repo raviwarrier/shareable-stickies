@@ -1,0 +1,6 @@
+{
+  "name": "Shareable Stickies",
+  "description": "Self-hostable modern pastebin. For you to use or share with others.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

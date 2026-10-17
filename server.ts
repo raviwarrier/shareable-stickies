@@ -1,0 +1,596 @@
+import express, { Request, Response, NextFunction } from 'express';
+import fs from 'fs';
+import path from 'path';
+import multer from 'multer';
+import dotenv from 'dotenv';
+import { db, UserRecord } from './server/db.js';
+import { getStorageDriver, StoredAttachment } from './server/storage/storageDriver.js';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+const storageDriver = getStorageDriver();
+
+// Increase JSON payload limit for large code snippets
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ extended: true, limit: '20mb' }));
+
+// Configure multer in memory so driver can handle destination (unlimited images per paste)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 15 * 1024 * 1024, // 15MB limit per image
+  },
+  fileFilter: (_req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files (JPEG, PNG, GIF, WebP, SVG) are allowed'));
+    }
+  },
+});
+
+// Extend Express Request to include user
+interface AuthenticatedRequest extends Request {
+  user?: UserRecord | null;
+}
+
+// Auth Middleware
+function authMiddleware(req: AuthenticatedRequest, _res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  const sessionHeader = req.headers['x-session-token'] as string;
+  let token = '';
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7);
+  } else if (sessionHeader) {
+    token = sessionHeader;
+  }
+
+  if (token) {
+    req.user = db.getUserByToken(token);
+  } else {
+    req.user = null;
+  }
+  next();
+}
+
+app.use(authMiddleware);
+
+// --- Static Uploads Endpoint ---
+app.get('/api/uploads/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = storageDriver.getAttachmentPath(filename);
+  if (!filePath) {
+    return res.status(404).json({ error: 'Attachment file not found' });
+  }
+  res.sendFile(filePath);
+});
+
+// --- Auth Endpoints ---
+app.post('/api/auth/login', (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+    const { user, token } = db.authenticate(username, password);
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+      },
+    });
+  } catch (err: any) {
+    res.status(401).json({ error: err.message || 'Authentication failed' });
+  }
+});
+
+app.post('/api/auth/register', (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+    const user = db.createUser(username, password);
+    const { token } = db.authenticate(username, password);
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+      },
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || 'Registration failed' });
+  }
+});
+
+app.get('/api/auth/me', (req: AuthenticatedRequest, res) => {
+  if (!req.user) {
+    return res.json({ user: null });
+  }
+  res.json({
+    user: {
+      id: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
+    },
+  });
+});
+
+app.post('/api/auth/logout', (req: AuthenticatedRequest, res) => {
+  const authHeader = req.headers.authorization;
+  const sessionHeader = req.headers['x-session-token'] as string;
+  const token = authHeader?.replace('Bearer ', '') || sessionHeader;
+  if (token) {
+    db.revokeSession(token);
+  }
+  res.json({ ok: true });
+});
+
+app.post('/api/auth/change-password', (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Both current password and new password are required' });
+  }
+  try {
+    db.changePassword(req.user.id, currentPassword, newPassword);
+    res.json({ success: true, message: 'Password changed successfully' });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || 'Failed to change password' });
+  }
+});
+
+// --- Custom Slug Validation Preflight ---
+app.get('/api/validate-slug/:slug', (req, res) => {
+  const slug = req.params.slug;
+  const excludePasteId = (req.query.excludePasteId as string) || undefined;
+  const validation = db.validateSlug(slug);
+  if (!validation.valid) {
+    return res.json({ valid: false, message: validation.error });
+  }
+  const available = db.isSlugAvailable(slug, excludePasteId);
+  if (!available) {
+    return res.json({ valid: false, message: 'Slug is already taken' });
+  }
+  res.json({ valid: true, message: 'Slug is available' });
+});
+
+// --- Create Paste Endpoint ---
+app.post('/api/pastes', upload.array('attachments'), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const settings = db.getAppSettings();
+    if (!settings.allowAnonymousCreation && !req.user) {
+      return res.status(401).json({
+        error: 'Creating stickies without signing in is disabled on this server. Please sign in or register to create stickies.',
+        requiresAuth: true,
+      });
+    }
+
+    const {
+      title,
+      content,
+      syntax,
+      customSlug,
+      expiration,
+      password,
+      clientEncrypted,
+      visibility,
+      burnAfterReading,
+    } = req.body;
+
+    if (!content && content !== '') {
+      return res.status(400).json({ error: 'Paste content cannot be empty' });
+    }
+
+    // Process uploaded attachments
+    const files = (req.files as Express.Multer.File[]) || [];
+    const savedAttachments: StoredAttachment[] = [];
+    for (const file of files) {
+      const stored = await storageDriver.saveAttachment(file);
+      savedAttachments.push(stored);
+    }
+
+    const result = db.createPaste({
+      title,
+      content,
+      syntax: syntax || 'plaintext',
+      customSlug: customSlug ? customSlug.trim() : undefined,
+      expiration: expiration || 'never',
+      password,
+      clientEncrypted: clientEncrypted === 'true' || clientEncrypted === true,
+      visibility: visibility || 'public',
+      burnAfterReading: burnAfterReading === 'true' || burnAfterReading === true,
+      userId: req.user?.id || null,
+      authorUsername: req.user?.username || null,
+      attachments: savedAttachments,
+    });
+
+    res.status(201).json({
+      success: true,
+      paste: {
+        id: result.paste.id,
+        slug: result.paste.slug,
+        title: result.paste.title,
+        syntax: result.paste.syntax,
+        visibility: result.paste.visibility,
+        expiresAt: result.paste.expiresAt,
+        burnAfterReading: result.paste.burnAfterReading,
+        shareUrl: result.shareUrl,
+        attachments: result.paste.attachments,
+        createdAt: result.paste.createdAt,
+      },
+    });
+  } catch (err: any) {
+    console.error('[API] Create paste error:', err);
+    res.status(400).json({ error: err.message || 'Failed to create paste' });
+  }
+});
+
+// --- Get Paste Endpoint ---
+app.get('/api/pastes/:slug', (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const slug = req.params.slug;
+    const password = (req.query.password as string) || '';
+    const incrementView = req.query.incrementView !== 'false';
+
+    const result = db.getPasteBySlug(slug, {
+      password,
+      incrementView,
+      user: req.user,
+    });
+
+    if (result.requiresPassword) {
+      return res.status(403).json({
+        requiresPassword: true,
+        paste: result.paste,
+      });
+    }
+
+    res.json({
+      success: true,
+      paste: result.paste,
+    });
+  } catch (err: any) {
+    res.status(404).json({ error: err.message || 'Paste not found' });
+  }
+});
+
+// --- Record Copy Count ---
+app.post('/api/pastes/:slug/copy', (req, res) => {
+  db.recordCopy(req.params.slug);
+  res.json({ ok: true });
+});
+
+// --- Raw Plaintext Endpoint ---
+app.get('/raw/:slug', (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const slug = req.params.slug;
+    const password = (req.query.password as string) || '';
+    const result = db.getPasteBySlug(slug, { password, incrementView: true, user: req.user });
+
+    if (result.requiresPassword) {
+      return res.status(403).send('Error: This paste is password-protected. Provide ?password= in URL.');
+    }
+
+    if (!result.paste.content) {
+      return res.status(404).send('Paste content unavailable.');
+    }
+
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.send(result.paste.content);
+  } catch (err: any) {
+    res.status(404).setHeader('Content-Type', 'text/plain; charset=utf-8').send(err.message || 'Paste not found');
+  }
+});
+
+// --- User Pastes Dashboard List ---
+app.get('/api/user/pastes', (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  const pastes = db.listUserPastes(req.user.id);
+  res.json({ pastes });
+});
+
+// --- Public Stickies by Username ---
+app.get('/api/public-stickies/:username', (req, res) => {
+  try {
+    const { username } = req.params;
+    const result = db.listPublicStickiesByUsername(username);
+    res.json(result);
+  } catch (err: any) {
+    res.status(404).json({ error: err.message || 'Public stickies not found' });
+  }
+});
+
+// --- Toggle Pin ---
+app.post('/api/pastes/:id/pin', (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  const pinned = db.togglePin(req.params.id, req.user.id);
+  res.json({ pinned });
+});
+
+// --- Delete Paste ---
+app.delete('/api/pastes/:id', (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  db.deletePaste(req.params.id);
+  res.json({ ok: true });
+});
+
+// --- Update Paste (Author or Admin) ---
+app.put('/api/pastes/:id', (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  try {
+    const { title, content, syntax, visibility, customSlug } = req.body;
+    const updated = db.updatePaste(req.params.id, { title, content, syntax, visibility, customSlug }, req.user);
+    res.json({
+      success: true,
+      paste: {
+        id: updated.id,
+        slug: updated.slug,
+        title: updated.title,
+        syntax: updated.syntax,
+        visibility: updated.visibility,
+      },
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || 'Failed to update paste' });
+  }
+});
+
+// --- Admin Controls ---
+app.get('/api/admin/stats', (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  res.json(db.getStats());
+});
+
+app.post('/api/admin/toggle-demo', (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  const { enable } = req.body;
+  const isEnabled = db.toggleDemoUser(!!enable);
+  res.json({ success: true, demoEnabled: isEnabled });
+});
+
+app.get('/api/admin/oidc', (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  res.json(db.getOidcConfig());
+});
+
+app.post('/api/admin/oidc', (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  const updated = db.saveOidcConfig(req.body);
+  res.json({ success: true, oidc: updated });
+});
+
+// --- OIDC Client Login Endpoint ---
+app.post('/api/auth/oidc/login', (req, res) => {
+  const oidc = db.getOidcConfig();
+  if (!oidc.enabled) {
+    return res.status(400).json({ error: 'OIDC Single Sign-On is not currently enabled by the administrator' });
+  }
+  const email = (req.body.email || 'user@domain.com').trim().toLowerCase();
+  
+  // Validate allowed domains
+  if (oidc.allowedDomains && oidc.allowedDomains.trim() !== '*') {
+    const allowed = oidc.allowedDomains.split(',').map((d: string) => d.trim().toLowerCase());
+    const domain = email.split('@')[1];
+    if (!domain || !allowed.includes(domain)) {
+      return res.status(403).json({ error: `Email domain is not permitted by OIDC policy. Allowed: ${oidc.allowedDomains}` });
+    }
+  }
+
+  // Provision or retrieve user
+  const username = email.split('@')[0] || 'oidc_user';
+  const user = db.getOrCreateOidcUser(username);
+  const token = db.createSession(user.id);
+
+  res.json({
+    token,
+    user: {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+    },
+  });
+});
+
+app.get('/api/admin/settings', (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  const settings = db.getAppSettings();
+  const oidc = db.getOidcConfig();
+
+  res.json({
+    defaultTheme: settings.defaultTheme || 'dark',
+    allowAnonymousCreation: !!settings.allowAnonymousCreation,
+    storageDriver: settings.storageDriver || 'local',
+    cloudinaryConfig: {
+      cloudName: settings.cloudinaryConfig?.cloudName || process.env.CLOUDINARY_CLOUD_NAME || '',
+      apiKey: settings.cloudinaryConfig?.apiKey || process.env.CLOUDINARY_API_KEY || '',
+      apiSecret: settings.cloudinaryConfig?.apiSecret ? '••••••••' : '',
+    },
+    s3Config: {
+      bucketName: settings.s3Config?.bucketName || process.env.AWS_BUCKET_NAME || '',
+      region: settings.s3Config?.region || process.env.AWS_REGION || 'us-east-1',
+      accessKeyId: settings.s3Config?.accessKeyId || process.env.AWS_ACCESS_KEY_ID || '',
+      secretAccessKey: settings.s3Config?.secretAccessKey ? '••••••••' : '',
+      endpoint: settings.s3Config?.endpoint || process.env.AWS_ENDPOINT || '',
+    },
+    oidcConfig: oidc,
+    adminUser: {
+      id: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
+    },
+  });
+});
+
+app.post('/api/admin/settings', (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  try {
+    const { defaultTheme, allowAnonymousCreation, storageDriver, cloudinaryConfig, s3Config, oidcConfig } = req.body;
+
+    const updatedSettings = db.updateAppSettings({
+      ...(defaultTheme ? { defaultTheme } : {}),
+      ...(allowAnonymousCreation !== undefined ? { allowAnonymousCreation: Boolean(allowAnonymousCreation) } : {}),
+      ...(storageDriver ? { storageDriver } : {}),
+      ...(cloudinaryConfig ? { cloudinaryConfig } : {}),
+      ...(s3Config ? { s3Config } : {}),
+    });
+
+    if (oidcConfig) {
+      db.saveOidcConfig(oidcConfig);
+    }
+
+    res.json({ success: true, settings: updatedSettings });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || 'Failed to update settings' });
+  }
+});
+
+// Admin change username and password
+app.post('/api/admin/change-admin-credentials', (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  try {
+    const { currentPassword, newUsername, newPassword } = req.body;
+    const result = db.updateAdminCredentials(req.user.id, {
+      currentPassword,
+      newUsername,
+      newPassword,
+    });
+
+    res.json({
+      success: true,
+      message: 'Admin credentials updated successfully',
+      user: {
+        id: result.user.id,
+        username: result.user.username,
+        role: result.user.role,
+      },
+      token: result.token,
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || 'Failed to update admin credentials' });
+  }
+});
+
+// Admin test storage connection
+app.post('/api/admin/test-storage', async (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  const { driver, cloudinaryConfig, s3Config } = req.body;
+  try {
+    if (driver === 'cloudinary') {
+      const { CloudinaryStorageDriver } = await import('./server/storage/storageDriver.js');
+      const testDriver = new CloudinaryStorageDriver(cloudinaryConfig);
+      const test = await testDriver.testConnection();
+      return res.json(test);
+    } else if (driver === 's3') {
+      const { S3StorageDriver } = await import('./server/storage/storageDriver.js');
+      const testDriver = new S3StorageDriver(s3Config);
+      const test = await testDriver.testConnection();
+      return res.json(test);
+    } else {
+      const { LocalStorageDriver } = await import('./server/storage/storageDriver.js');
+      const testDriver = new LocalStorageDriver();
+      const test = await testDriver.testConnection();
+      return res.json(test);
+    }
+  } catch (err: any) {
+    res.status(400).json({ success: false, message: err.message || 'Failed to test storage' });
+  }
+});
+
+// --- System Configuration Info ---
+app.get('/api/config', (_req, res) => {
+  const oidc = db.getOidcConfig();
+  const settings = db.getAppSettings();
+  res.json({
+    defaultTheme: settings.defaultTheme || 'dark',
+    allowPublicPastes: process.env.ALLOW_PUBLIC_PASTES !== 'false',
+    storageDriver: settings.storageDriver || 'local',
+    allowAnonymousCreation: !!settings.allowAnonymousCreation,
+    oidcEnabled: !!oidc.enabled,
+    oidcProviderName: oidc.providerName || 'Single Sign-On',
+    requireOidcOnly: !!oidc.requireOidcOnly,
+    allowedDomains: oidc.allowedDomains || '*',
+  });
+});
+
+// --- Vite / Static Integration ---
+async function startServer() {
+  const isProd = process.env.NODE_ENV === 'production';
+
+  if (!isProd) {
+    // In dev mode, mount Vite middleware with HMR disabled
+    const { createServer: createViteServer } = await import('vite');
+    const vite = await createViteServer({
+      server: {
+        middlewareMode: true,
+        hmr: false,
+      },
+      appType: 'custom',
+    });
+    app.use(vite.middlewares);
+
+    // Serve transformed index.html for SPA routes (e.g., /, /p/:slug, /dashboard)
+    app.use('*', async (req, res, next) => {
+      const url = req.originalUrl;
+      if (url.startsWith('/api') || url.startsWith('/raw')) {
+        return next();
+      }
+      try {
+        const indexPath = path.resolve(process.cwd(), 'index.html');
+        let template = fs.readFileSync(indexPath, 'utf-8');
+        template = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (e: any) {
+        vite.ssrFixStacktrace(e);
+        next(e);
+      }
+    });
+  } else {
+    // In prod mode, serve static dist
+    const distPath = path.resolve(process.cwd(), 'dist');
+    app.use(express.static(distPath));
+    app.get('*', (_req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  }
+
+  app.listen(PORT, () => {
+    console.log(`[Shareable Stickies] Server running on port ${PORT} (NODE_ENV=${process.env.NODE_ENV || 'development'})`);
+  });
+}
+
+startServer();
