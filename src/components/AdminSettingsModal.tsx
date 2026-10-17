@@ -300,7 +300,7 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-4xl max-h-[85vh] flex flex-col rounded-lg solid-glass-panel overflow-y-auto shadow-2xl"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl max-h-[85vh] rounded-lg solid-glass-panel overflow-y-auto shadow-2xl"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--sg-panel-border)] solid-glass-subbar shrink-0">
