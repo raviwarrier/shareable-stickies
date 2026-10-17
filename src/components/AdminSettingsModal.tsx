@@ -41,8 +41,58 @@ interface AdminSettingsModalProps {
 
 type TabType = 'theme' | 'permissions' | 'oidc' | 'storage' | 'attachments' | 'account';
 
-// Default max attachment size (matches server default of 15MB)
-const DEFAULT_MAX_FILE_SIZE_MB = 15;
+// Theme option item component (extracted to reduce cognitive complexity)
+const ThemeOption: React.FC<{
+  value: 'dark' | 'light' | 'sepia';
+  label: string;
+  icon: React.ComponentType<any>;
+  description: string;
+  selected: boolean;
+  onSelect: (value: 'dark' | 'light' | 'sepia') => void;
+  selectedTheme: 'dark' | 'light' | 'sepia';
+}> = ({ value, label, icon: Icon, description, selected, selectedTheme, onSelect }) => (
+  <div
+    onClick={() => onSelect(value)}
+    className={`p-3.5 rounded-md border cursor-pointer transition flex flex-col gap-2.5 ${
+      selected
+        ? 'solid-glass-btn-active border-[var(--sg-btn-active-border)] ring-1 ring-[var(--sg-text)]/20'
+        : 'solid-glass-panel hover:border-[var(--sg-btn-border)]'
+    }`}
+  >
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <Icon className="w-4 h-4 text-[var(--sg-text)]" />
+        <span className="font-semibold text-xs text-[var(--sg-text)]">{label}</span>
+      </div>
+      {selected && (
+        <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded solid-glass-badge">
+          Default
+        </span>
+      )}
+    </div>
+    <div className="h-10 rounded border p-1.5 flex flex-col justify-between">
+      {selectedTheme === 'dark' && (
+        <>
+          <div className="w-12 h-1.5 rounded-full bg-white/20" />
+          <div className="w-20 h-1.5 rounded-full bg-white/10" />
+        </>
+      )}
+      {selectedTheme === 'light' && (
+        <>
+          <div className="w-12 h-1.5 rounded-full bg-black/20" />
+          <div className="w-20 h-1.5 rounded-full bg-black/10" />
+        </>
+      )}
+      {selectedTheme === 'sepia' && (
+        <>
+          <div className="w-12 h-1.5 rounded-full bg-[#cbba9e]" />
+          <div className="w-20 h-1.5 rounded-full bg-[#dfd0b7]" />
+        </>
+      )}
+    </div>
+    <p className="text-[11px] text-[var(--sg-text-muted)]">{description}</p>
+  </div>
+);
 
 export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
   isOpen,
@@ -454,80 +504,33 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {/* Dark Mode (Default) */}
-                      <div
-                        onClick={() => setSelectedTheme('dark')}
-                        className={`p-3.5 rounded-md border cursor-pointer transition flex flex-col gap-2.5 ${
-                          selectedTheme === 'dark'
-                            ? 'solid-glass-btn-active border-[var(--sg-btn-active-border)] ring-1 ring-[var(--sg-text)]/20'
-                            : 'solid-glass-panel hover:border-[var(--sg-btn-border)]'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Moon className="w-4 h-4 text-[var(--sg-text)]" />
-                            <span className="font-semibold text-xs text-[var(--sg-text)]">Dark</span>
-                          </div>
-                          <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded solid-glass-badge">
-                            Default
-                          </span>
-                        </div>
-                        <div className="h-10 rounded border border-white/10 bg-[#090a0f] p-1.5 flex flex-col justify-between">
-                          <div className="w-12 h-1.5 rounded-full bg-white/20" />
-                          <div className="w-20 h-1.5 rounded-full bg-white/10" />
-                        </div>
-                        <p className="text-[11px] text-[var(--sg-text-muted)]">
-                          Sleek high-contrast dark aesthetic optimized for code reading and low light.
-                        </p>
-                      </div>
-
-                      {/* Light Mode */}
-                      <div
-                        onClick={() => setSelectedTheme('light')}
-                        className={`p-3.5 rounded-md border cursor-pointer transition flex flex-col gap-2.5 ${
-                          selectedTheme === 'light'
-                            ? 'solid-glass-btn-active border-[var(--sg-btn-active-border)] ring-1 ring-[var(--sg-text)]/20'
-                            : 'solid-glass-panel hover:border-[var(--sg-btn-border)]'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Sun className="w-4 h-4 text-[var(--sg-text)]" />
-                            <span className="font-semibold text-xs text-[var(--sg-text)]">Light</span>
-                          </div>
-                        </div>
-                        <div className="h-10 rounded border border-black/10 bg-[#f3f4f6] p-1.5 flex flex-col justify-between">
-                          <div className="w-12 h-1.5 rounded-full bg-black/20" />
-                          <div className="w-20 h-1.5 rounded-full bg-black/10" />
-                        </div>
-                        <p className="text-[11px] text-[var(--sg-text-muted)]">
-                          Crisp, clean paper-white aesthetic with sharp dark typography and syntax highlights.
-                        </p>
-                      </div>
-
-                      {/* Sepia Mode */}
-                      <div
-                        onClick={() => setSelectedTheme('sepia')}
-                        className={`p-3.5 rounded-md border cursor-pointer transition flex flex-col gap-2.5 ${
-                          selectedTheme === 'sepia'
-                            ? 'solid-glass-btn-active border-[var(--sg-btn-active-border)] ring-1 ring-[var(--sg-text)]/20'
-                            : 'solid-glass-panel hover:border-[var(--sg-btn-border)]'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <BookOpen className="w-4 h-4 text-[var(--sg-text)]" />
-                            <span className="font-semibold text-xs text-[var(--sg-text)]">Sepia</span>
-                          </div>
-                        </div>
-                        <div className="h-10 rounded border border-stone-300 bg-[#f5eedd] p-1.5 flex flex-col justify-between">
-                          <div className="w-12 h-1.5 rounded-full bg-[#cbba9e]" />
-                          <div className="w-20 h-1.5 rounded-full bg-[#dfd0b7]" />
-                        </div>
-                        <p className="text-[11px] text-[var(--sg-text-muted)]">
-                          Warm warm-paper parchment palette designed to minimize eye fatigue during extended reading.
-                        </p>
-                      </div>
+                      <ThemeOption
+                        value="dark"
+                        label="Dark"
+                        icon={Moon}
+                        description="Sleek high-contrast dark aesthetic optimized for code reading and low light."
+                        selected={selectedTheme === 'dark'}
+                        selectedTheme={selectedTheme}
+                        onSelect={setSelectedTheme}
+                      />
+                      <ThemeOption
+                        value="light"
+                        label="Light"
+                        icon={Sun}
+                        description="Crisp, clean paper-white aesthetic with sharp dark typography and syntax highlights."
+                        selected={selectedTheme === 'light'}
+                        selectedTheme={selectedTheme}
+                        onSelect={setSelectedTheme}
+                      />
+                      <ThemeOption
+                        value="sepia"
+                        label="Sepia"
+                        icon={BookOpen}
+                        description="Warm warm-paper parchment palette designed to minimize eye fatigue during extended reading."
+                        selected={selectedTheme === 'sepia'}
+                        selectedTheme={selectedTheme}
+                        onSelect={setSelectedTheme}
+                      />
                     </div>
 
                     <div className="p-3 rounded-md solid-glass-subbar border border-[var(--sg-panel-border)] text-xs text-[var(--sg-text-muted)] flex items-start gap-2.5">
