@@ -53,6 +53,8 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   const modalContent = (
     <dialog
       ref={dialogRef}
+      role="dialog"
+      tabIndex={0}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -60,6 +62,8 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
       className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm font-mono text-xs"
     >
       <div
+        role="button"
+        tabIndex={0}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
         className="w-full max-w-sm rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl"

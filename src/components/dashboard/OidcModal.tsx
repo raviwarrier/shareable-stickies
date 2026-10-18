@@ -41,9 +41,7 @@ export const OidcModal: React.FC<OidcModalProps> = ({
         onClick={onClose}
         className="fixed inset-0 bg-black/60 cursor-default border-0 p-0 m-0 w-full h-full"
       />
-      <div
-        role="dialog"
-        aria-modal="true"
+      <dialog
         aria-label="OpenID Connect Authentication Settings"
         className="relative z-10 w-full max-w-xl rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl"
       >
@@ -193,7 +191,7 @@ export const OidcModal: React.FC<OidcModalProps> = ({
             </button>
           </div>
         </form>
-      </div>
+      </dialog>
     </div>
   );
 

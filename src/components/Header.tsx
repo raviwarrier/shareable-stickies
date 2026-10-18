@@ -455,11 +455,15 @@ export const Header: React.FC<HeaderProps> = ({
       {showRegisterModal && typeof document !== 'undefined' && createPortal(
         <dialog
           ref={registerModalRef}
+          role="dialog"
+          tabIndex={0}
           onClick={(e) => { if (e.target === e.currentTarget) setShowRegisterModal(false); }}
           onKeyDown={(e) => { if (e.key === 'Escape') setShowRegisterModal(false); }}
           className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm text-sm"
         >
           <div
+            role="button"
+            tabIndex={0}
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
             className="w-full max-w-md rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
@@ -554,11 +558,15 @@ export const Header: React.FC<HeaderProps> = ({
       {showSettingsModal && user && typeof document !== 'undefined' && createPortal(
         <dialog
           ref={settingsModalRef}
+          role="dialog"
+          tabIndex={0}
           onClick={(e) => { if (e.target === e.currentTarget) setShowSettingsModal(false); }}
           onKeyDown={(e) => { if (e.key === 'Escape') setShowSettingsModal(false); }}
           className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm text-sm"
         >
           <div
+            role="button"
+            tabIndex={0}
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
             className="w-full max-w-md rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"

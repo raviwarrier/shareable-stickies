@@ -91,8 +91,8 @@ function isExecutable(filename: string, mimetype: string): boolean {
 
 // Configure multer in memory so driver can handle destination (unlimited files per paste)
 // File type and max size validation is done dynamically in the create-paste route using DB settings
-// Max file size is capped at 100MB as a hard upper bound for upload buffer safety
-const MAX_UPLOAD_BUFFER = 100 * 1024 * 1024; // 100MB hard cap for multer buffer
+// Max file size is capped at 10MB as a hard upper bound for upload buffer safety
+const MAX_UPLOAD_BUFFER = 10 * 1024 * 1024; // 10MB hard cap for multer buffer
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {

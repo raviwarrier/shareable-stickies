@@ -123,10 +123,10 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
           setMaxFileSizeMB(Math.round(data.maxFileSize / (1024 * 1024)) || 15);
         }
       })
+      .finally(() => setLoading(false))
       .catch((err) => {
         setStatusMessage({ type: 'error', text: err.message || 'Failed to fetch settings' });
-      })
-      .finally(() => setLoading(false));
+      });
   }, [isOpen]);
 
   // Handle Save System Settings
@@ -370,9 +370,9 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
         onClick={onClose}
         className="fixed inset-0 bg-black/60 cursor-default border-0 p-0 m-0 w-full h-full"
       />
-      <div
-        role="dialog"
-        aria-modal="true"
+      <dialog
+
+
         aria-label="Server & Administrator Settings"
         className="relative z-10 w-full max-w-4xl max-h-[85vh] sm:max-h-[90vh] my-auto rounded-lg solid-glass-panel flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150"
       >
@@ -428,7 +428,7 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
             {renderTabContent()}
           </div>
         </div>
-      </div>
+      </dialog>
     </div>
   );
 

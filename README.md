@@ -150,12 +150,12 @@ This application was developed with the assistance of Google AI Studio. AI was u
 
 ## SAST
 
-Static Application Security Testing (SAST) results will be published here.
+Static Application Security Testing (SAST) results are published below. All identified issues have been remediated — see the detailed fix log for each change, including the rule name, severity, and rationale.
 
-- **SonarCloud**: https://sonarcloud.io (project results link will be added once scans are run)
-- **Fixes file**: Link to SAST remediation details will be added here
+- **SonarCloud Project**: https://sonarcloud.io/project/overview?id=raviwarrier_shareable-stickies
+- **SAST Fixes Log**: [fixes.md](./fixes.md) — one-line summary of every code fix applied, categorized by rule ID (e.g., `typescript:S3776`, `typescript:S6848`, `docker:S6470`, `javascript:S2076`) with severity level (CRITICAL, MAJOR, MINOR, CODE_SMELL, BUG, VULNERABILITY).
 
-The SAST section is currently empty. Security findings and their fixes will be tracked here once scans are executed against the codebase.
+The SAST remediation covers SQL injection defense-in-depth, SHA-1 → SHA-256 encryption upgrade, Docker non-root user and image pinning, multer file size limits, Express header hardening, cognitive complexity reductions, accessibility fixes (ARIA roles, keyboard listeners, form labels), and more.
 
 ## License
 
