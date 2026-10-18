@@ -795,21 +795,7 @@ class Database {
   public toggleDemoUser(enable: boolean): boolean {
     const demoUser = Object.values(this.schema.users).find((u) => u.username === 'demo_user');
     if (!enable && demoUser) {
-      // Remove demo user and all associated stickies and sessions
-      delete this.schema.users[demoUser.id];
-      for (const pasteId of Object.keys(this.schema.pastes)) {
-        if (
-          this.schema.pastes[pasteId].userId === demoUser.id ||
-          this.schema.pastes[pasteId].authorUsername === 'demo_user'
-        ) {
-          delete this.schema.pastes[pasteId];
-        }
-      }
-      for (const token of Object.keys(this.schema.sessions)) {
-        if (this.schema.sessions[token].userId === demoUser.id) {
-          delete this.schema.sessions[token];
-        }
-      }
+      this.removeDemoUserContent(demoUser);
       this.persist();
       console.log('[DB] Admin disabled demo_user and removed demo content');
       return false;
@@ -819,6 +805,23 @@ class Database {
       return true;
     }
     return !!demoUser;
+  }
+
+  private removeDemoUserContent(demoUser: UserRecord): void {
+    delete this.schema.users[demoUser.id];
+    for (const pasteId of Object.keys(this.schema.pastes)) {
+      if (
+        this.schema.pastes[pasteId].userId === demoUser.id ||
+        this.schema.pastes[pasteId].authorUsername === 'demo_user'
+      ) {
+        delete this.schema.pastes[pasteId];
+      }
+    }
+    for (const token of Object.keys(this.schema.sessions)) {
+      if (this.schema.sessions[token].userId === demoUser.id) {
+        delete this.schema.sessions[token];
+      }
+    }
   }
 
   public updatePaste(
@@ -1025,70 +1028,76 @@ class Database {
       throw new Error('Unauthorized: Admin account required');
     }
 
-    // Verify current password unless in dev environment without password set
-    if (params.currentPassword) {
-      let isValid = verifyPassword(params.currentPassword, user.passwordHash, user.passwordSalt);
-      if (!isValid && process.env.NODE_ENV !== 'production') {
-        if (params.currentPassword === 'admin' || params.currentPassword === 'admin123' || params.currentPassword === 'admin_password') {
-          isValid = true;
-        }
-      }
-      if (!isValid) {
-        throw new Error('Current administrator password is incorrect');
-      }
-    } else if (process.env.NODE_ENV === 'production') {
-      throw new Error('Current password is required to change administrator credentials');
-    }
-
-    // Update username if requested
+    this.verifyCurrentPassword(user, params.currentPassword);
     if (params.newUsername) {
-      const cleanUser = params.newUsername.trim();
-      if (cleanUser.length < 3 || cleanUser.length > 32) {
-        throw new Error('Username must be between 3 and 32 characters');
-      }
-      if (!/^[a-zA-Z0-9_-]+$/.test(cleanUser)) {
-        throw new Error('Username can only contain letters, numbers, hyphens, and underscores');
-      }
-      const existingUser = Object.values(this.schema.users).some(
-        (u) => u.id !== user.id && u.username.toLowerCase() === cleanUser.toLowerCase()
-      );
-      if (existingUser) {
-        throw new Error(`Username "${cleanUser}" is already taken by another user`);
-      }
-
-      const oldUsername = user.username;
-      user.username = cleanUser;
-
-      // Update past stickies owned by this user
-      for (const paste of Object.values(this.schema.pastes)) {
-        if (paste.userId === user.id || paste.authorUsername === oldUsername) {
-          paste.authorUsername = cleanUser;
-        }
-      }
-
-      // Update active sessions
-      for (const session of Object.values(this.schema.sessions)) {
-        if (session.userId === user.id) {
-          session.username = cleanUser;
-        }
-      }
+      this.updateAdminUsername(user, params.newUsername);
     }
-
-    // Update password if requested
     if (params.newPassword) {
-      if (params.newPassword.length < 6) {
-        throw new Error('New password must be at least 6 characters long');
-      }
-      const { hash, salt } = hashPassword(params.newPassword);
-      user.passwordHash = hash;
-      user.passwordSalt = salt;
+      this.updateAdminPassword(user, params.newPassword);
     }
 
     this.persist();
 
-    // Generate fresh session token
     const token = this.createSession(user.id);
     return { user, token };
+  }
+
+  private verifyCurrentPassword(user: UserRecord, currentPassword?: string): void {
+    if (!currentPassword) {
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error('Current password is required to change administrator credentials');
+      }
+      return;
+    }
+    let isValid = verifyPassword(currentPassword, user.passwordHash, user.passwordSalt);
+    if (!isValid && process.env.NODE_ENV !== 'production') {
+      if (currentPassword === 'admin' || currentPassword === 'admin123' || currentPassword === 'admin_password') {
+        isValid = true;
+      }
+    }
+    if (!isValid) {
+      throw new Error('Current administrator password is incorrect');
+    }
+  }
+
+  private updateAdminUsername(user: UserRecord, newUsername: string): void {
+    const cleanUser = newUsername.trim();
+    if (cleanUser.length < 3 || cleanUser.length > 32) {
+      throw new Error('Username must be between 3 and 32 characters');
+    }
+    if (!/^[a-zA-Z0-9_-]+$/.test(cleanUser)) {
+      throw new Error('Username can only contain letters, numbers, hyphens, and underscores');
+    }
+    const existingUser = Object.values(this.schema.users).some(
+      (u) => u.id !== user.id && u.username.toLowerCase() === cleanUser.toLowerCase()
+    );
+    if (existingUser) {
+      throw new Error(`Username "${cleanUser}" is already taken by another user`);
+    }
+
+    const oldUsername = user.username;
+    user.username = cleanUser;
+
+    for (const paste of Object.values(this.schema.pastes)) {
+      if (paste.userId === user.id || paste.authorUsername === oldUsername) {
+        paste.authorUsername = cleanUser;
+      }
+    }
+
+    for (const session of Object.values(this.schema.sessions)) {
+      if (session.userId === user.id) {
+        session.username = cleanUser;
+      }
+    }
+  }
+
+  private updateAdminPassword(user: UserRecord, newPassword: string): void {
+    if (newPassword.length < 6) {
+      throw new Error('New password must be at least 6 characters long');
+    }
+    const { hash, salt } = hashPassword(newPassword);
+    user.passwordHash = hash;
+    user.passwordSalt = salt;
   }
 }
 
