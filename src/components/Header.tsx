@@ -433,19 +433,18 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Requirement 12: Registration Confirmation Modal with Password Match & Warning */}
       {showRegisterModal && typeof document !== 'undefined' && createPortal(
-        <div
-          onClick={() => setShowRegisterModal(false)}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowRegisterModal(false); }}
-          role="button"
-          tabIndex={0}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm text-sm"
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm text-sm">
+          <button
+            type="button"
+            aria-label="Close registration modal"
+            onClick={() => setShowRegisterModal(false)}
+            className="fixed inset-0 bg-black/60 cursor-default border-0 p-0 m-0 w-full h-full"
+          />
           <div
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
-            role="button"
-            tabIndex={0}
-            className="w-full max-w-md rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Confirm Account Registration"
+            className="relative z-10 w-full max-w-md rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--sg-panel-border)]">
               <div className="flex items-center gap-2 text-[var(--sg-text)] font-semibold text-base">
@@ -535,19 +534,18 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Account Settings Modal (Password Change) */}
       {showSettingsModal && user && typeof document !== 'undefined' && createPortal(
-        <div
-          onClick={() => setShowSettingsModal(false)}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowSettingsModal(false); }}
-          role="button"
-          tabIndex={0}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm text-sm"
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm text-sm">
+          <button
+            type="button"
+            aria-label="Close account settings modal"
+            onClick={() => setShowSettingsModal(false)}
+            className="fixed inset-0 bg-black/60 cursor-default border-0 p-0 m-0 w-full h-full"
+          />
           <div
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
-            role="button"
-            tabIndex={0}
-            className="w-full max-w-md rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Account Settings"
+            className="relative z-10 w-full max-w-md rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--sg-panel-border)]">
               <div className="flex items-center gap-2 text-[var(--sg-text)] font-semibold text-base">

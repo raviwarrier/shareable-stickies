@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Paste, User } from '../types';
 import { getPaste, recordCopy } from '../api';
 import { decryptClientSide, isClientEncrypted } from '../crypto/clientCrypto';
@@ -212,9 +212,10 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
     URL.revokeObjectURL(url);
   };
 
-  const lines = useMemo(() => {
-    if (!activeContent) return [];
-    return activeContent.split('\n');
+  const lineNumbersText = useMemo(() => {
+    if (!activeContent) return '1';
+    const count = activeContent.split('\n').length;
+    return Array.from({ length: count }, (_, i) => i + 1).join('\n');
   }, [activeContent]);
 
   const formattedDate = useMemo(() => {
@@ -511,12 +512,10 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
         <div className="rounded-lg solid-glass-panel overflow-hidden flex min-h-[420px]">
           {/* Line numbers gutter */}
           <div
-            className="w-14 select-none py-4 text-right pr-3 font-mono text-sm text-[var(--sg-text-muted)] border-r border-[var(--sg-panel-border)] bg-black/10 dark:bg-black/20 leading-7"
+            className="w-14 select-none py-4 text-right pr-3 font-mono text-sm text-[var(--sg-text-muted)] border-r border-[var(--sg-panel-border)] bg-black/10 dark:bg-black/20 leading-7 whitespace-pre"
             aria-hidden="true"
           >
-            {lines.map((_, i) => (
-              <div key={`line-${i}`}>{i + 1}</div>
-            ))}
+            {lineNumbersText}
           </div>
 
           {/* Code / Text Container with Syntax Highlighting */}
@@ -548,25 +547,27 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
             {paste.attachments.map((att) => (
               <div
                 key={att.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => setSelectedImage(att.url)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedImage(att.url); }}
                 className="group relative p-2 rounded-md solid-glass-btn flex flex-col gap-2 overflow-hidden transition"
               >
-                <img
-                  src={att.url}
-                  alt={att.originalName}
-                  className="w-full h-28 object-cover group-hover:scale-105 transition"
-                />
-                <div className="flex items-center justify-between text-xs">
-                  <span className="truncate text-[var(--sg-text)] font-medium" title={att.originalName}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedImage(att.url)}
+                  className="w-full text-left cursor-pointer focus:outline-none flex flex-col gap-2"
+                >
+                  <img
+                    src={att.url}
+                    alt={att.originalName}
+                    className="w-full h-28 object-cover group-hover:scale-105 transition rounded"
+                  />
+                  <span className="truncate text-[var(--sg-text)] font-medium block" title={att.originalName}>
                     {att.originalName}
                   </span>
+                </button>
+                <div className="flex items-center justify-end">
                   <a
                     href={att.url}
                     download={att.originalName}
-                    className="p-1 rounded-md solid-glass-btn text-[var(--sg-text-muted)] hover:text-[var(--sg-text)]"
+                    className="p-1 rounded-md solid-glass-btn text-[var(--sg-text-muted)] hover:text-[var(--sg-text)] transition cursor-pointer"
                     title="Download image"
                   >
                     <Download className="w-3.5 h-3.5" />

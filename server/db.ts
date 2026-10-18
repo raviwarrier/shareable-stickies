@@ -201,8 +201,8 @@ class Database {
     if (isProduction || process.env.ENABLE_DEMO_USER === 'false') {
       return;
     }
-    const demoUser = Object.values(this.schema.users).find((u) => u.username === 'demo_user');
-    if (!demoUser) {
+    const hasDemoUser = Object.values(this.schema.users).some((u) => u.username === 'demo_user');
+    if (!hasDemoUser) {
       const { hash, salt } = hashPassword('demo_password');
       const demoId = crypto.randomUUID();
       this.schema.users[demoId] = {
@@ -369,7 +369,7 @@ class Database {
     attachments?: StoredAttachment[];
   }): { paste: PasteRecord; shareUrl: string } {
     let slug: string;
-    if (params.customSlug && params.customSlug.trim()) {
+    if (params.customSlug?.trim()) {
       const cleanSlug = params.customSlug.trim();
       const validation = this.validateSlug(cleanSlug);
       if (!validation.valid) {
@@ -824,6 +824,21 @@ class Database {
     }
   }
 
+  private applyCustomSlugUpdate(paste: PasteRecord, customSlug?: string, id?: string) {
+    const cleanSlug = customSlug?.trim();
+    if (!cleanSlug || cleanSlug.toLowerCase() === paste.slug.toLowerCase()) {
+      return;
+    }
+    const validation = this.validateSlug(cleanSlug);
+    if (!validation.valid) {
+      throw new Error(validation.error || 'Invalid custom slug');
+    }
+    if (!this.isSlugAvailable(cleanSlug, id)) {
+      throw new Error(`The slug "${cleanSlug}" is already in use by another sticky`);
+    }
+    paste.slug = cleanSlug;
+  }
+
   public updatePaste(
     id: string,
     params: {
@@ -847,18 +862,8 @@ class Database {
     if (params.content !== undefined) {
       paste.encryptedContent = encryptAtRest(params.content);
     }
-    if (params.customSlug && params.customSlug.trim()) {
-      const cleanSlug = params.customSlug.trim();
-      if (cleanSlug.toLowerCase() !== paste.slug.toLowerCase()) {
-        const validation = this.validateSlug(cleanSlug);
-        if (!validation.valid) {
-          throw new Error(validation.error || 'Invalid custom slug');
-        }
-        if (!this.isSlugAvailable(cleanSlug, id)) {
-          throw new Error(`The slug "${cleanSlug}" is already in use by another sticky`);
-        }
-        paste.slug = cleanSlug;
-      }
+    if (params.customSlug) {
+      this.applyCustomSlugUpdate(paste, params.customSlug, id);
     }
     this.persist();
     return paste;
