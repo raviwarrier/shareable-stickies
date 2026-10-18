@@ -519,7 +519,7 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
             aria-hidden="true"
           >
             {lines.map((_, i) => (
-              <div key={i}>{i + 1}</div>
+              <div key={`line-${i}`}>{i + 1}</div>
             ))}
           </div>
 
@@ -552,18 +552,17 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
             {paste.attachments.map((att) => (
               <div
                 key={att.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelectedImage(att.url)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedImage(att.url); }}
                 className="group relative p-2 rounded-md solid-glass-btn flex flex-col gap-2 overflow-hidden transition"
               >
-                <div
-                  onClick={() => setSelectedImage(att.url)}
-                  className="w-full h-28 rounded-md bg-black/20 flex items-center justify-center overflow-hidden cursor-pointer"
-                >
-                  <img
-                    src={att.url}
-                    alt={att.originalName}
-                    className="w-full h-full object-cover group-hover:scale-105 transition"
-                  />
-                </div>
+                <img
+                  src={att.url}
+                  alt={att.originalName}
+                  className="w-full h-28 object-cover group-hover:scale-105 transition"
+                />
                 <div className="flex items-center justify-between text-xs">
                   <span className="truncate text-[var(--sg-text)] font-medium" title={att.originalName}>
                     {att.originalName}
