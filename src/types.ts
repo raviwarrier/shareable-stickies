@@ -84,10 +84,13 @@ export interface FileTypeCategories {
   other: boolean;
 }
 
+export type AppTheme = 'dark' | 'light' | 'sepia';
+export type StorageDriverType = 'local' | 'cloudinary' | 's3';
+
 export interface AdminSystemSettings {
-  defaultTheme: 'dark' | 'light' | 'sepia';
+  defaultTheme: AppTheme;
   allowAnonymousCreation: boolean;
-  storageDriver: 'local' | 'cloudinary' | 's3';
+  storageDriver: StorageDriverType;
   cloudinaryConfig: CloudinaryConfig;
   s3Config: S3Config;
   oidcConfig: OidcConfig;

@@ -67,6 +67,13 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
     return content.split('\n').length;
   }, [content]);
 
+  // Line numbers text computation
+  const lineNumbersText = useMemo(() => {
+    return Array.from({ length: lineCount }, (_, i) => i + 1).join('\n');
+  }, [lineCount]);
+
+
+
   // Real-time metrics
   const metrics = useMemo(() => {
     const bytes = new Blob([content]).size;
@@ -304,14 +311,13 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
             {showLineNumbers && (
               <div
                 ref={lineGutterRef}
-                className="w-14 select-none py-4 text-right pr-3 font-mono text-sm text-[var(--sg-text-muted)] border-r border-[var(--sg-panel-border)] bg-black/10 dark:bg-black/25 overflow-hidden leading-7 font-medium"
+                className="w-14 select-none py-4 text-right pr-3 font-mono text-sm text-[var(--sg-text-muted)] border-r border-[var(--sg-panel-border)] bg-black/10 dark:bg-black/25 overflow-hidden leading-7 font-medium whitespace-pre"
                 aria-hidden="true"
               >
-                {Array.from({ length: lineCount }).map((_, i) => (
-                  <div key={`line-${i}`}>{i + 1}</div>
-                ))}
+                {lineNumbersText}
               </div>
             )}
+
 
             <textarea
               ref={textareaRef}

@@ -45,7 +45,7 @@ export const PublicStickies: React.FC<PublicStickiesProps> = ({
         setLoading(false);
       }
     };
-    loadPastes();
+    void loadPastes();
   }, [username]);
 
   const handleCopyLink = async (slug: string, e: React.MouseEvent) => {
@@ -189,17 +189,17 @@ export const PublicStickies: React.FC<PublicStickiesProps> = ({
             return (
               <div
                 key={item.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => onNavigate(`/p/${item.slug}`)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate(`/p/${item.slug}`); }}
-                className="group relative p-3.5 rounded-lg solid-glass-panel border hover:border-[var(--sg-btn-active-border)] transition-all flex flex-col justify-between gap-3 cursor-pointer shadow-md"
+                className="group relative p-3.5 rounded-lg solid-glass-panel border hover:border-[var(--sg-btn-active-border)] transition-all flex flex-col justify-between gap-3 shadow-md"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-1.5">
-                    <h2 className="font-semibold text-[var(--sg-text)] truncate text-sm transition flex-1">
+                    <button
+                      type="button"
+                      onClick={() => onNavigate(`/p/${item.slug}`)}
+                      className="font-semibold text-[var(--sg-text)] truncate text-sm transition flex-1 text-left hover:underline cursor-pointer"
+                    >
                       {item.title}
-                    </h2>
+                    </button>
                     <span className="px-2 py-0.5 rounded-md solid-glass-badge font-semibold uppercase text-[11px] shrink-0 font-mono">
                       {item.syntax}
                     </span>
@@ -260,9 +260,13 @@ export const PublicStickies: React.FC<PublicStickiesProps> = ({
                       Raw Contents
                     </a>
                     <span className="opacity-30">•</span>
-                    <span className="text-[var(--sg-text)] hover:underline flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => onNavigate(`/p/${item.slug}`)}
+                      className="text-[var(--sg-text)] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
                       Open <ExternalLink className="w-3 h-3" />
-                    </span>
+                    </button>
                   </div>
                 </div>
               </div>

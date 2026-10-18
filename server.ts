@@ -1,10 +1,10 @@
-﻿import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
 import multer from 'multer';
 import dotenv from 'dotenv';
 import { db, UserRecord, FileTypeCategories } from './server/db.js';
-import { getStorageDriver, StoredAttachment } from './server/storage/storageDriver.js';
+import { getStorageDriver } from './server/storage/storageDriver.js';
 
 dotenv.config();
 
@@ -92,7 +92,7 @@ function isExecutable(filename: string, mimetype: string): boolean {
 // Configure multer in memory so driver can handle destination (unlimited files per paste)
 // File type and max size validation is done dynamically in the create-paste route using DB settings
 // Max file size is capped at 100MB as a hard upper bound for upload buffer safety
-const MAX_UPLOAD_BUFFER = 10 * 1024 * 1024; // 10MB hard cap for multer buffer
+const MAX_UPLOAD_BUFFER = 100 * 1024 * 1024; // 100MB hard cap for multer buffer
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -155,7 +155,7 @@ function authMiddleware(req: AuthenticatedRequest, _res: Response, next: NextFun
   const sessionHeader = req.headers['x-session-token'] as string;
   let token = '';
 
-  if (authHeader && authHeader.startsWith('Bearer ')) {
+  if (authHeader?.startsWith('Bearer ')) {
     token = authHeader.substring(7);
   } else if (sessionHeader) {
     token = sessionHeader;
@@ -506,14 +506,14 @@ app.post('/api/admin/toggle-demo', (req: AuthenticatedRequest, res: Response) =>
 });
 
 app.get('/api/admin/oidc', (req: AuthenticatedRequest, res: Response) => {
-  if (!req.user || req.user.role !== 'admin') {
+  if (req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }
   res.json(db.getOidcConfig());
 });
 
 app.post('/api/admin/oidc', (req: AuthenticatedRequest, res: Response) => {
-  if (!req.user || req.user.role !== 'admin') {
+  if (req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }
   const updated = db.saveOidcConfig(req.body);
@@ -632,7 +632,7 @@ app.post('/api/admin/settings', (req: AuthenticatedRequest, res: Response) => {
 
 // Admin change username and password
 app.post('/api/admin/change-admin-credentials', (req: AuthenticatedRequest, res: Response) => {
-  if (!req.user || req.user.role !== 'admin') {
+  if (req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }
   try {
@@ -660,7 +660,7 @@ app.post('/api/admin/change-admin-credentials', (req: AuthenticatedRequest, res:
 
 // Admin test storage connection
 app.post('/api/admin/test-storage', async (req: AuthenticatedRequest, res: Response) => {
-  if (!req.user || req.user.role !== 'admin') {
+  if (req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }
   const { driver, cloudinaryConfig, s3Config } = req.body;

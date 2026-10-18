@@ -1,4 +1,4 @@
-﻿import fs from 'node:fs';
+import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
@@ -217,8 +217,6 @@ export class S3StorageDriver implements StorageDriver {
       const id = crypto.randomUUID();
       const ext = path.extname(file.originalname).toLowerCase() || '.png';
       const key = `uploads/${id}${ext}`;
-      
-      const host = this.endpoint ? new URL(this.endpoint).host : `${this.bucket}.s3.${this.region}.amazonaws.com`;
 
       // Also save locally as mirror/cache for offline resilience
       const localResult = await this.fallbackLocal.saveAttachment(file);

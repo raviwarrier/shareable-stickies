@@ -61,7 +61,7 @@ export default function App() {
 
   // Initialize session, server config, and URL listeners
   useEffect(() => {
-    getCurrentUser().then((u) => setUser(u));
+    getCurrentUser().then((u) => setUser(u)).catch(() => {});
     getAppConfig().then((cfg) => {
       setAppConfig(cfg);
       if (!localStorage.getItem('app-theme') && cfg.defaultTheme) {
@@ -201,7 +201,7 @@ export default function App() {
       setLastCreatedSlug(null);
 
       // Copy automatically
-      navigator.clipboard.writeText(fullUrl);
+      await navigator.clipboard.writeText(fullUrl);
     } catch (err: any) {
       setSubmitError(err.message || 'Failed to generate stateless link');
     }
@@ -241,6 +241,94 @@ export default function App() {
   const isDashboardView = currentPath === '/dashboard';
   const isStatelessView = !!statelessData;
 
+  const renderMainContent = () => {
+    if (isStatelessView) {
+      return (
+        <PasteViewer
+          statelessData={statelessData}
+          onNavigate={navigate}
+          onEditPaste={handleEditPaste}
+          user={user}
+        />
+      );
+    }
+    if (isPasteView && pasteSlug) {
+      return (
+        <PasteViewer
+          slug={pasteSlug}
+          onNavigate={navigate}
+          onEditPaste={handleEditPaste}
+          user={user}
+        />
+      );
+    }
+    if (isPublicStickiesView && publicUsername) {
+      return (
+        <PublicStickies
+          username={publicUsername}
+          currentUser={user}
+          onNavigate={navigate}
+        />
+      );
+    }
+    if (isDashboardView && user) {
+      return (
+        <Dashboard
+          user={user}
+          onNavigate={navigate}
+          onEditPaste={handleEditPaste}
+        />
+      );
+    }
+    return (
+      /* Dual-Pane Editor Workbench (Default / Root view) */
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 items-stretch">
+        {/* Left Pane: Code / Text Editor & Attachments */}
+        <EditorPane
+          title={title}
+          setTitle={setTitle}
+          content={content}
+          setContent={setContent}
+          syntax={syntax}
+          setSyntax={setSyntax}
+          attachments={attachments}
+          setAttachments={setAttachments}
+          showLineNumbers={showLineNumbers}
+          setShowLineNumbers={setShowLineNumbers}
+          isStatelessMode={pasteMode === 'stateless'}
+        />
+
+        {/* Right Pane: Settings, Mode Switcher & Share Actions */}
+        <SettingsSidebar
+          pasteMode={pasteMode}
+          setPasteMode={setPasteMode}
+          customSlug={customSlug}
+          setCustomSlug={setCustomSlug}
+          expiration={expiration}
+          setExpiration={setExpiration}
+          visibility={visibility}
+          setVisibility={setVisibility}
+          password={password}
+          setPassword={setPassword}
+          burnAfterReading={burnAfterReading}
+          setBurnAfterReading={setBurnAfterReading}
+          onSubmit={handlePublish}
+          onStatelessSubmit={handleStatelessSubmit}
+          isSubmitting={isSubmitting}
+          lastCreatedUrl={lastCreatedUrl}
+          lastCreatedSlug={lastCreatedSlug}
+          onNavigate={navigate}
+          attachmentsCount={attachments.length}
+          onClearAttachments={() => setAttachments([])}
+          user={user}
+          allowAnonymousCreation={appConfig?.allowAnonymousCreation ?? false}
+          editingPaste={editingPaste}
+          onCancelEdit={handleNewSticky}
+        />
+      </div>
+    );
+  };
+
   return (
     <div
       className="min-h-screen bg-[var(--sg-bg)] text-[var(--sg-text)] flex flex-col relative solid-glass-grid transition-colors duration-200"
@@ -278,61 +366,7 @@ export default function App() {
           </div>
         )}
 
-        {isStatelessView ? (
-          <PasteViewer statelessData={statelessData} onNavigate={navigate} onEditPaste={handleEditPaste} user={user} />
-        ) : isPasteView && pasteSlug ? (
-          <PasteViewer slug={pasteSlug} onNavigate={navigate} onEditPaste={handleEditPaste} user={user} />
-        ) : isPublicStickiesView && publicUsername ? (
-          <PublicStickies username={publicUsername} currentUser={user} onNavigate={navigate} />
-        ) : isDashboardView && user ? (
-          <Dashboard user={user} onNavigate={navigate} onEditPaste={handleEditPaste} />
-        ) : (
-          /* Dual-Pane Editor Workbench (Default / Root view) */
-          <div className="flex-1 flex flex-col lg:flex-row gap-4 items-stretch">
-            {/* Left Pane: Code / Text Editor & Attachments */}
-            <EditorPane
-              title={title}
-              setTitle={setTitle}
-              content={content}
-              setContent={setContent}
-              syntax={syntax}
-              setSyntax={setSyntax}
-              attachments={attachments}
-              setAttachments={setAttachments}
-              showLineNumbers={showLineNumbers}
-              setShowLineNumbers={setShowLineNumbers}
-              isStatelessMode={pasteMode === 'stateless'}
-            />
-
-            {/* Right Pane: Settings, Mode Switcher & Share Actions */}
-            <SettingsSidebar
-              pasteMode={pasteMode}
-              setPasteMode={setPasteMode}
-              customSlug={customSlug}
-              setCustomSlug={setCustomSlug}
-              expiration={expiration}
-              setExpiration={setExpiration}
-              visibility={visibility}
-              setVisibility={setVisibility}
-              password={password}
-              setPassword={setPassword}
-              burnAfterReading={burnAfterReading}
-              setBurnAfterReading={setBurnAfterReading}
-              onSubmit={handlePublish}
-              onStatelessSubmit={handleStatelessSubmit}
-              isSubmitting={isSubmitting}
-              lastCreatedUrl={lastCreatedUrl}
-              lastCreatedSlug={lastCreatedSlug}
-              onNavigate={navigate}
-              attachmentsCount={attachments.length}
-              onClearAttachments={() => setAttachments([])}
-              user={user}
-              allowAnonymousCreation={appConfig?.allowAnonymousCreation ?? false}
-              editingPaste={editingPaste}
-              onCancelEdit={handleNewSticky}
-            />
-          </div>
-        )}
+        {renderMainContent()}
       </main>
 
       {/* Footer with Solid Glass Theme Integration */}
