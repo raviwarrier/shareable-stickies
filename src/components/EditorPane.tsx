@@ -124,8 +124,7 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
     if (!files || isStatelessMode) return;
     const newFiles: File[] = [];
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+    for (const file of files) {
       const dotIdx = file.name.lastIndexOf('.');
       const ext = dotIdx >= 0 ? file.name.toLowerCase().substring(dotIdx) : '';
       if (!ext || !EXECUTABLE_EXTENSIONS.has(ext)) {
