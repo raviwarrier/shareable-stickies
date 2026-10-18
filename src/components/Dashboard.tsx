@@ -682,7 +682,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onEditPa
                   <td className="py-2.5 px-3.5 text-[var(--sg-text-muted)] text-xs">{item.views}</td>
                   <td className="py-2.5 px-3.5 text-[var(--sg-text-muted)] text-xs">{item.copyCount}</td>
                   <td className="py-2.5 px-3.5 text-right">
-                    <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-end gap-1.5" role="button" tabIndex={0} onClick={(e) => e.stopPropagation()} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}>
                       <button
                         type="button"
                         onClick={(e) => handleCopyLink(item.slug, e)}
@@ -783,8 +783,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onEditPa
 
               {/* Provider Name */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium text-[var(--sg-text-muted)]">Provider Name / Preset</label>
+                <label className="text-[11px] font-medium text-[var(--sg-text-muted)]" htmlFor="oidc-provider-name">Provider Name / Preset</label>
                 <input
+                  id="oidc-provider-name"
                   type="text"
                   value={oidcConfig.providerName}
                   onChange={(e) => setOidcConfig({ ...oidcConfig, providerName: e.target.value })}
@@ -795,8 +796,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onEditPa
 
               {/* Issuer URL */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium text-[var(--sg-text-muted)]">Issuer URL / Discovery Endpoint</label>
+                <label className="text-[11px] font-medium text-[var(--sg-text-muted)]" htmlFor="oidc-issuer-url">Issuer URL / Discovery Endpoint</label>
                 <input
+                  id="oidc-issuer-url"
                   type="text"
                   value={oidcConfig.issuerUrl}
                   onChange={(e) => setOidcConfig({ ...oidcConfig, issuerUrl: e.target.value })}
