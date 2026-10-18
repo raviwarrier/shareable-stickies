@@ -67,7 +67,7 @@ export class LocalStorageDriver implements StorageDriver {
     }
   }
 
-  async testConnection(): Promise<{ success: boolean; message: string }> {
+  testConnection(): Promise<{ success: boolean; message: string }> {
     try {
       if (!fs.existsSync(this.uploadDir)) {
         fs.mkdirSync(this.uploadDir, { recursive: true });
@@ -75,9 +75,9 @@ export class LocalStorageDriver implements StorageDriver {
       const testFile = path.join(this.uploadDir, `.test_${Date.now()}`);
       fs.writeFileSync(testFile, 'test');
       fs.unlinkSync(testFile);
-      return { success: true, message: `Local storage directory (${this.uploadDir}) is writable and active.` };
+      return Promise.resolve({ success: true, message: `Local storage directory (${this.uploadDir}) is writable and active.` });
     } catch (err: any) {
-      return { success: false, message: `Failed to write to local directory: ${err.message}` };
+      return Promise.resolve({ success: false, message: `Failed to write to local directory: ${err.message}` });
     }
   }
 }
@@ -245,14 +245,14 @@ export class S3StorageDriver implements StorageDriver {
     return this.fallbackLocal.deleteAttachment(filename);
   }
 
-  async testConnection(): Promise<{ success: boolean; message: string }> {
+  testConnection(): Promise<{ success: boolean; message: string }> {
     if (!this.bucket || !this.accessKeyId || !this.secretAccessKey) {
-      return { success: false, message: 'AWS Bucket Name, Access Key ID, and Secret Access Key must all be specified.' };
+      return Promise.resolve({ success: false, message: 'AWS Bucket Name, Access Key ID, and Secret Access Key must all be specified.' });
     }
-    return {
+    return Promise.resolve({
       success: true,
       message: `S3 storage configured for bucket "${this.bucket}" (region: ${this.region}).`,
-    };
+    });
   }
 }
 
@@ -293,16 +293,17 @@ export class DynamicStorageManager implements StorageDriver {
     return this.getActiveDriver().deleteAttachment(filename);
   }
 
-  async testConnection(): Promise<{ success: boolean; message: string }> {
+  testConnection(): Promise<{ success: boolean; message: string }> {
     const driver = this.getActiveDriver();
     if (driver.testConnection) {
       return driver.testConnection();
     }
-    return { success: true, message: 'Storage driver operational.' };
+    return Promise.resolve({ success: true, message: 'Storage driver operational.' });
   }
 }
 
 export function getStorageDriver(): StorageDriver {
   return new DynamicStorageManager();
 }
+
 
