@@ -124,6 +124,21 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
     }
   }, [slug, statelessData]);
 
+  const handleClientSideDecryption = async (paste: Paste, pwd?: string) => {
+    if (!paste.content) return;
+    const isEnc = paste.clientEncrypted || isClientEncrypted(paste.content);
+    if (!isEnc) return;
+    setIsClientEnc(true);
+    if (pwd) {
+      try {
+        const plain = await decryptClientSide(paste.content, pwd);
+        setClientDecryptedContent(plain);
+      } catch {
+        // User needs to provide decryption passphrase
+      }
+    }
+  };
+
   const fetchPasteData = async (pwd?: string) => {
     if (!slug) return;
     setLoading(true);
@@ -137,20 +152,7 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
       } else {
         setRequiresPassword(false);
         setPaste(res.paste);
-
-        // Check if content was encrypted client-side with zero-knowledge AES-GCM
-        if (res.paste.content && (res.paste.clientEncrypted || isClientEncrypted(res.paste.content))) {
-          setIsClientEnc(true);
-          // If a password was provided to server, try to use it for client decryption
-          if (pwd) {
-            try {
-              const plain = await decryptClientSide(res.paste.content, pwd);
-              setClientDecryptedContent(plain);
-            } catch {
-              // User needs to provide decryption passphrase
-            }
-          }
-        }
+        await handleClientSideDecryption(res.paste, pwd);
 
         if (res.paste.burnAfterReading || res.paste.isBurnedNow) {
           setBurnedNotice(true);
