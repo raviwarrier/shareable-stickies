@@ -454,41 +454,10 @@ class Database {
       throw new Error('This paste has self-destructed after reading');
     }
 
-  // Check password protection
-    if (paste.hasPassword && paste.passwordHash && paste.passwordSalt) {
-      const isOwner = options?.user && options.user.id === paste.userId;
-      if (!isOwner) {
-        if (!options?.password) {
-          return {
-            paste: {
-              id: paste.id,
-              slug: paste.slug,
-              title: paste.title,
-              syntax: paste.syntax,
-              clientEncrypted: paste.clientEncrypted,
-              hasPassword: true,
-              visibility: paste.visibility,
-              burnAfterReading: paste.burnAfterReading,
-              burnViewed: paste.burnViewed,
-              createdAt: paste.createdAt,
-              expiresAt: paste.expiresAt,
-              expirationOption: paste.expirationOption,
-              views: paste.views,
-              copyCount: paste.copyCount,
-              userId: paste.userId,
-              authorUsername: paste.authorUsername,
-              attachments: [],
-              pinned: paste.pinned,
-            },
-            requiresPassword: true,
-          };
-        }
-
-        const valid = verifyPassword(options.password, paste.passwordHash, paste.passwordSalt);
-        if (!valid) {
-          throw new Error('Incorrect password');
-        }
-      }
+    // Check password protection
+    const passwordResult = this.checkPastePassword(paste, options);
+    if (passwordResult) {
+      return passwordResult;
     }
 
     // Decrypt content from rest
@@ -520,6 +489,50 @@ class Database {
         isBurnedNow,
       },
     };
+  }
+
+  private checkPastePassword(paste: PasteRecord, options?: { password?: string; user?: UserRecord | null }): { paste: PastePreview; requiresPassword?: boolean } | null {
+    if (!paste.hasPassword || !paste.passwordHash || !paste.passwordSalt) {
+      return null;
+    }
+
+    const isOwner = options?.user && options.user.id === paste.userId;
+    if (isOwner) {
+      return null;
+    }
+
+    if (!options?.password) {
+      return {
+        paste: {
+          id: paste.id,
+          slug: paste.slug,
+          title: paste.title,
+          syntax: paste.syntax,
+          clientEncrypted: paste.clientEncrypted,
+          hasPassword: true,
+          visibility: paste.visibility,
+          burnAfterReading: paste.burnAfterReading,
+          burnViewed: paste.burnViewed,
+          createdAt: paste.createdAt,
+          expiresAt: paste.expiresAt,
+          expirationOption: paste.expirationOption,
+          views: paste.views,
+          copyCount: paste.copyCount,
+          userId: paste.userId,
+          authorUsername: paste.authorUsername,
+          attachments: [],
+          pinned: paste.pinned,
+        },
+        requiresPassword: true,
+      };
+    }
+
+    const valid = verifyPassword(options.password, paste.passwordHash, paste.passwordSalt);
+    if (!valid) {
+      throw new Error('Incorrect password');
+    }
+
+    return null;
   }
 
   public recordCopy(slug: string): void {
