@@ -170,6 +170,28 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
 
   const hasStatelessImageConflict = pasteMode === 'stateless' && attachmentsCount > 0;
 
+  const renderSlugValidationStatus = () => {
+    if (slugValidation.checking) {
+      return (
+        <span className="text-[var(--sg-text-muted)] flex items-center gap-1">
+          <Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking availability...
+        </span>
+      );
+    }
+    if (slugValidation.valid) {
+      return (
+        <span className="text-emerald-500 flex items-center gap-1 font-medium">
+          <CheckCircle2 className="w-3.5 h-3.5" /> Available link
+        </span>
+      );
+    }
+    return (
+      <span className="text-rose-500 flex items-center gap-1 font-medium">
+        <AlertCircle className="w-3.5 h-3.5" /> {slugValidation.message}
+      </span>
+    );
+  };
+
   return (
     <div className="w-full lg:w-88 flex flex-col gap-3 font-mono text-sm">
       {/* Active Edit Mode Banner */}
@@ -260,19 +282,7 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
 
               {customSlug.trim() && (
                 <div className="flex items-center gap-1.5 text-xs mt-0.5">
-                  {slugValidation.checking ? (
-                    <span className="text-[var(--sg-text-muted)] flex items-center gap-1">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking availability...
-                    </span>
-                  ) : slugValidation.valid ? (
-                    <span className="text-emerald-500 flex items-center gap-1 font-medium">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Available link
-                    </span>
-                  ) : (
-                    <span className="text-rose-500 flex items-center gap-1 font-medium">
-                      <AlertCircle className="w-3.5 h-3.5" /> {slugValidation.message}
-                    </span>
-                  )}
+                  {renderSlugValidationStatus()}
                 </div>
               )}
             </div>
