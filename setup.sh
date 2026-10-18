@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # ==============================================================================
-# Shareable Stickies — Installation & Administration Setup Script
+# Shareable Stickies â€” Installation & Administration Setup Script
 # Version: 0.1.0
 # ==============================================================================
 
@@ -16,7 +16,7 @@ DIM="\033[2m"
 
 echo -e "${CYAN}${BOLD}"
 echo "======================================================================"
-echo "          Shareable Stickies — Admin & Server Setup (v 0.1.0)"
+echo "          Shareable Stickies â€” Admin & Server Setup (v 0.1.0)"
 echo "======================================================================"
 echo -e "${RESET}"
 echo -e "This wizard configures your installation settings either interactively"
@@ -25,8 +25,8 @@ echo -e "directly to the persistent database (${BOLD}./data/stickies.json${RESET
 echo ""
 
 ENV_FILE=".env"
-if [ ! -f "$ENV_FILE" ]; then
-  if [ -f ".env.example" ]; then
+if [[ ! -f "$ENV_FILE" ]; then
+  if [[ -f ".env.example" ]; then
     cp .env.example .env
   else
     touch .env
@@ -38,10 +38,10 @@ get_env_val() {
   local key="$1"
   local default="$2"
   local val
-  if [ -f "$ENV_FILE" ]; then
+  if [[ -f "$ENV_FILE" ]; then
     val=$(grep -E "^${key}=" "$ENV_FILE" | cut -d '=' -f2- | tr -d '"' | tr -d "'" || true)
   fi
-  if [ -z "$val" ]; then
+  if [[ -z "$val" ]; then
     echo "$default"
   else
     echo "$val"
@@ -70,7 +70,7 @@ case "$THEME_INPUT" in
     CHOSEN_MODE="dark"
     ;;
 esac
-echo -e "${GREEN}✓ Theme mode set to: ${BOLD}${CHOSEN_MODE}${RESET}\n"
+echo -e "${GREEN}âœ“ Theme mode set to: ${BOLD}${CHOSEN_MODE}${RESET}\n"
 
 # ------------------------------------------------------------------------------
 # 2. Allow Public Creation of Stickies (default: off)
@@ -87,7 +87,7 @@ case "$PUBLIC_INPUT" in
     CHOSEN_ALLOW_PUBLIC="false"
     ;;
 esac
-echo -e "${GREEN}✓ Allow public creation: ${BOLD}${CHOSEN_ALLOW_PUBLIC}${RESET} (off by default)\n"
+echo -e "${GREEN}âœ“ Allow public creation: ${BOLD}${CHOSEN_ALLOW_PUBLIC}${RESET} (off by default)\n"
 
 # ------------------------------------------------------------------------------
 # 3. OIDC Settings
@@ -118,7 +118,7 @@ if [[ "$OIDC_CONFIRM" =~ ^[yY] ]]; then
   else
     CHOSEN_OIDC_ONLY="false"
   fi
-  echo -e "${GREEN}✓ OIDC configured for ${BOLD}${CHOSEN_OIDC_PROVIDER}${RESET}\n"
+  echo -e "${GREEN}âœ“ OIDC configured for ${BOLD}${CHOSEN_OIDC_PROVIDER}${RESET}\n"
 else
   CHOSEN_OIDC_ENABLED="false"
   CHOSEN_OIDC_PROVIDER="Enterprise SSO"
@@ -127,7 +127,7 @@ else
   CHOSEN_OIDC_CLIENT_SECRET=""
   CHOSEN_OIDC_DOMAINS="*"
   CHOSEN_OIDC_ONLY="false"
-  echo -e "${DIM}✓ OIDC Single Sign-On disabled.${RESET}\n"
+  echo -e "${DIM}âœ“ OIDC Single Sign-On disabled.${RESET}\n"
 fi
 
 # ------------------------------------------------------------------------------
@@ -136,7 +136,7 @@ fi
 echo -e "${BOLD}[4/5] Image & Attachment Storage Driver${RESET}"
 echo -e "Choose attachment storage backend:"
 echo -e "  1) ${BOLD}local${RESET}       ${DIM}(default, stored in ./uploads directory)${RESET}"
-echo -e "  2) ${BOLD}cloudinary${RESET}  ${DIM}(Cloudinary CDN — requires org id / cloud name, api key, api secret)${RESET}"
+echo -e "  2) ${BOLD}cloudinary${RESET}  ${DIM}(Cloudinary CDN â€” requires org id / cloud name, api key, api secret)${RESET}"
 echo -e "  3) ${BOLD}s3${RESET}          ${DIM}(Amazon S3 or S3-compatible: MinIO, Cloudflare R2, Wasabi)${RESET}"
 
 read -p "Select storage driver [1-3] (default: 1): " STORAGE_INPUT
@@ -150,7 +150,7 @@ case "$STORAGE_INPUT" in
     read -s -p "  Cloudinary API Secret: " CLOUD_SECRET_IN
     echo ""
     CHOSEN_CLOUDINARY_API_SECRET="${CLOUD_SECRET_IN}"
-    echo -e "${GREEN}✓ Storage configured for: ${BOLD}Cloudinary (${CHOSEN_CLOUDINARY_CLOUD_NAME})${RESET}\n"
+    echo -e "${GREEN}âœ“ Storage configured for: ${BOLD}Cloudinary (${CHOSEN_CLOUDINARY_CLOUD_NAME})${RESET}\n"
     ;;
   3|s3|S3)
     CHOSEN_STORAGE="s3"
@@ -165,13 +165,13 @@ case "$STORAGE_INPUT" in
     CHOSEN_AWS_SECRET="${S3_SECRET_IN}"
     read -p "  Custom Endpoint URL (optional, e.g. for MinIO or R2): " S3_ENDPOINT_IN
     CHOSEN_AWS_ENDPOINT="${S3_ENDPOINT_IN}"
-    echo -e "${GREEN}✓ Storage configured for: ${BOLD}S3 Bucket (${CHOSEN_AWS_BUCKET})${RESET}\n"
+    echo -e "${GREEN}âœ“ Storage configured for: ${BOLD}S3 Bucket (${CHOSEN_AWS_BUCKET})${RESET}\n"
     ;;
   *)
     CHOSEN_STORAGE="local"
     read -p "  Local Upload Directory [default: ./uploads]: " LOCAL_DIR_IN
     CHOSEN_UPLOAD_DIR="${LOCAL_DIR_IN:-./uploads}"
-    echo -e "${GREEN}✓ Storage configured for: ${BOLD}Local Disk (${CHOSEN_UPLOAD_DIR})${RESET}\n"
+    echo -e "${GREEN}âœ“ Storage configured for: ${BOLD}Local Disk (${CHOSEN_UPLOAD_DIR})${RESET}\n"
     ;;
 esac
 
@@ -186,19 +186,19 @@ CHOSEN_ADMIN_USER="${ADMIN_USER_INPUT:-$EXISTING_ADMIN_USER}"
 echo -e "${DIM}Enter new admin password (minimum 6 characters). Leave blank to keep existing:${RESET}"
 read -s -p "Admin Password: " ADMIN_PASS_INPUT
 echo ""
-if [ -n "$ADMIN_PASS_INPUT" ]; then
-  if [ ${#ADMIN_PASS_INPUT} -lt 6 ]; then
+if [[ -n "$ADMIN_PASS_INPUT" ]; then
+  if [[ ${#ADMIN_PASS_INPUT} -lt 6 ]; then
     echo -e "${YELLOW}Warning: Password shorter than 6 characters. Please provide at least 6 characters in production.${RESET}"
   fi
   CHOSEN_ADMIN_PASS="$ADMIN_PASS_INPUT"
 else
   CHOSEN_ADMIN_PASS=$(get_env_val "ADMIN_PASSWORD" "")
 fi
-echo -e "${GREEN}✓ Administrator credentials recorded for: ${BOLD}@${CHOSEN_ADMIN_USER}${RESET}\n"
+echo -e "${GREEN}âœ“ Administrator credentials recorded for: ${BOLD}@${CHOSEN_ADMIN_USER}${RESET}\n"
 
 # Ensure 32-byte encryption secret exists
 EXISTING_SECRET=$(get_env_val "ENCRYPTION_SECRET" "")
-if [ -z "$EXISTING_SECRET" ] || [ "$EXISTING_SECRET" = "replace-with-a-secure-32-byte-hex-or-passphrase-string" ]; then
+if [[ -z "$EXISTING_SECRET" ]] || [[ "$EXISTING_SECRET" = "replace-with-a-secure-32-byte-hex-or-passphrase-string" ]]; then
   GEN_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))" 2>/dev/null || openssl rand -hex 32 2>/dev/null || echo "c9f3b890a8274d8e9c20a1f4b892348572e819acb09182746182947192847192")
 else
   GEN_SECRET="$EXISTING_SECRET"
@@ -209,7 +209,7 @@ fi
 # ------------------------------------------------------------------------------
 cat <<EOF > "$ENV_FILE"
 # ==============================================================================
-# Shareable Stickies — Environment Configuration
+# Shareable Stickies â€” Environment Configuration
 # Generated by setup.sh on $(date -u +"%Y-%m-%dT%H:%M:%SZ")
 # ==============================================================================
 
@@ -257,7 +257,7 @@ ADMIN_USERNAME="${CHOSEN_ADMIN_USER}"
 ADMIN_PASSWORD="${CHOSEN_ADMIN_PASS}"
 EOF
 
-echo -e "${GREEN}${BOLD}✓ Saved configuration to ${ENV_FILE}${RESET}"
+echo -e "${GREEN}${BOLD}âœ“ Saved configuration to ${ENV_FILE}${RESET}"
 
 # Synchronize with persistent database if tsx / node is available
 if command -v npx >/dev/null 2>&1; then
@@ -269,12 +269,15 @@ echo ""
 echo -e "${CYAN}${BOLD}======================================================================${RESET}"
 echo -e "${GREEN}${BOLD}Setup Completed Successfully!${RESET}"
 echo -e "${CYAN}======================================================================${RESET}"
-echo -e "  • Mode:              ${BOLD}${CHOSEN_MODE}${RESET}"
-echo -e "  • Public Creation:   ${BOLD}${CHOSEN_ALLOW_PUBLIC}${RESET} (Default: off)"
-echo -e "  • OIDC SSO:          ${BOLD}${CHOSEN_OIDC_ENABLED}${RESET} (${CHOSEN_OIDC_PROVIDER})"
-echo -e "  • Storage Driver:    ${BOLD}${CHOSEN_STORAGE}${RESET}"
-echo -e "  • Admin Username:    ${BOLD}@${CHOSEN_ADMIN_USER}${RESET}"
+echo -e "  â€¢ Mode:              ${BOLD}${CHOSEN_MODE}${RESET}"
+echo -e "  â€¢ Public Creation:   ${BOLD}${CHOSEN_ALLOW_PUBLIC}${RESET} (Default: off)"
+echo -e "  â€¢ OIDC SSO:          ${BOLD}${CHOSEN_OIDC_ENABLED}${RESET} (${CHOSEN_OIDC_PROVIDER})"
+echo -e "  â€¢ Storage Driver:    ${BOLD}${CHOSEN_STORAGE}${RESET}"
+echo -e "  â€¢ Admin Username:    ${BOLD}@${CHOSEN_ADMIN_USER}${RESET}"
 echo -e "======================================================================"
 echo -e "You can start the server with: ${BOLD}npm run start${RESET} or ${BOLD}npm run dev${RESET}"
 echo -e "Settings can also be modified in the web app under ${BOLD}Admin Settings${RESET}."
 echo ""
+
+
+
