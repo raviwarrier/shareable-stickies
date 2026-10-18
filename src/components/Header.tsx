@@ -467,8 +467,9 @@ export const Header: React.FC<HeaderProps> = ({
 
             <form onSubmit={handleConfirmRegister} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-[var(--sg-text-muted)]">Username</label>
+                <label className="text-xs font-medium text-[var(--sg-text-muted)]" htmlFor="login-username">Username</label>
                 <input
+                  id="login-username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
@@ -478,8 +479,9 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-[var(--sg-text-muted)]">Password</label>
+                <label className="text-xs font-medium text-[var(--sg-text-muted)]" htmlFor="login-password">Password</label>
                 <input
+                  id="login-password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -489,14 +491,14 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-[var(--sg-text-muted)]">Confirm Password</label>
+                <label className="text-xs font-medium text-[var(--sg-text-muted)]" htmlFor="register-confirm-password">Confirm Password</label>
                 <input
+                  id="register-confirm-password"
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter password to confirm..."
                   className="solid-glass-input rounded-md px-3 py-2 text-[var(--sg-input-text)] outline-none text-xs font-mono placeholder-[var(--sg-text-muted)]"
-                  autoFocus
                   required
                 />
               </div>
@@ -578,9 +580,10 @@ export const Header: React.FC<HeaderProps> = ({
 
             <form onSubmit={handleChangePassword} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-[var(--sg-text-muted)]">Current password</label>
+                <label className="text-xs font-medium text-[var(--sg-text-muted)]" htmlFor="settings-current-password">Current password</label>
                 <div className="flex items-center rounded-md solid-glass-input overflow-hidden">
                   <input
+                    id="settings-current-password"
                     type={showCurrentPass ? 'text' : 'password'}
                     value={currentPassInput}
                     onChange={(e) => setCurrentPassInput(e.target.value)}
@@ -600,9 +603,10 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-[var(--sg-text-muted)]">New password (minimum 6 characters)</label>
+                <label className="text-xs font-medium text-[var(--sg-text-muted)]" htmlFor="settings-new-password">New password (minimum 6 characters)</label>
                 <div className="flex items-center rounded-md solid-glass-input overflow-hidden">
                   <input
+                    id="settings-new-password"
                     type={showNewPass ? 'text' : 'password'}
                     value={newPassInput}
                     onChange={(e) => setNewPassInput(e.target.value)}
@@ -622,8 +626,9 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-[var(--sg-text-muted)]">Confirm new password</label>
+                <label className="text-xs font-medium text-[var(--sg-text-muted)]" htmlFor="settings-confirm-password">Confirm new password</label>
                 <input
+                  id="settings-confirm-password"
                   type={showNewPass ? 'text' : 'password'}
                   value={confirmNewPassInput}
                   onChange={(e) => setConfirmNewPassInput(e.target.value)}
