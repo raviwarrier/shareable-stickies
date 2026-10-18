@@ -211,6 +211,10 @@ export const Header: React.FC<HeaderProps> = ({
 
   const chevronRotate = userDropdownOpen ? 'rotate-180' : '';
 
+  const isLoggedIn = !!user;
+  const isAdmin = user?.role === 'admin';
+  const showAuth = !user;
+
   return (
     <header className="solid-glass-bar sticky top-0 z-[100] transition-colors duration-200">
       {/* Primary Navigation Bar */}
@@ -257,7 +261,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             {/* @username dropdown menu */}
-            {user ? (
+            {isLoggedIn && (
               <div className="relative z-50" ref={dropdownRef}>
                 <button
                   type="button"
@@ -302,7 +306,7 @@ export const Header: React.FC<HeaderProps> = ({
                       </button>
 
                       {/* Admin Settings in dropdown for admin users */}
-                      {user.role === 'admin' && (
+                      {isAdmin && (
                         <button
                           type="button"
                           onClick={() => {
@@ -335,7 +339,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                 )}
               </div>
-            ) : null}
+            )}
           </div>
         </div>
       </div>
@@ -374,7 +378,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Right Side: Inline Auth (Sign In / Register) */}
-          {!user && (
+          {showAuth && (
             <div className="flex items-center gap-2 w-full md:w-auto justify-end">
               <form onSubmit={handleLogin} className="flex flex-wrap items-center gap-2 text-sm w-full sm:w-auto">
                 <input
@@ -662,7 +666,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               </div>
 
-              {user.role === 'admin' && (
+              {isAdmin && (
                 <div className="pt-2 border-t border-[var(--sg-panel-border)] flex items-center justify-between text-xs">
                   <span className="text-[var(--sg-text-muted)]">Server Administrator:</span>
                   <button
@@ -685,7 +689,7 @@ export const Header: React.FC<HeaderProps> = ({
       )}
 
       {/* Server & Administrator Settings Modal */}
-      {user && user.role === 'admin' && (
+      {isLoggedIn && isAdmin && (
         <AdminSettingsModal
           isOpen={showAdminModal}
           onClose={() => setShowAdminModal(false)}
