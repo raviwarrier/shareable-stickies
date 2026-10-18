@@ -134,11 +134,14 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
     return () => clearTimeout(timer);
   }, [customSlug, pasteMode, editingPaste]);
 
-  const fullShareUrl = lastCreatedUrl
-    ? lastCreatedUrl.startsWith('http://') || lastCreatedUrl.startsWith('https://')
-      ? lastCreatedUrl
-      : `${window.location.origin}${lastCreatedUrl.startsWith('/') ? '' : '/'}${lastCreatedUrl}`
-    : '';
+  const getFullShareUrl = (url: string | null): string => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    const prefix = url.startsWith('/') ? '' : '/';
+    return `${window.location.origin}${prefix}${url}`;
+  };
+
+  const fullShareUrl = getFullShareUrl(lastCreatedUrl);
 
   const handleCopyLink = async () => {
     if (!fullShareUrl) return;
