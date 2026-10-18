@@ -75,6 +75,26 @@ export const Header: React.FC<HeaderProps> = ({
   // User dropdown menu state
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const registerModalRef = React.useRef<HTMLDialogElement>(null);
+  const settingsModalRef = React.useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    if (!registerModalRef.current) return;
+    if (showRegisterModal) {
+      registerModalRef.current.showModal();
+    } else {
+      registerModalRef.current.close();
+    }
+  }, [showRegisterModal]);
+
+  useEffect(() => {
+    if (!settingsModalRef.current) return;
+    if (showSettingsModal) {
+      settingsModalRef.current.showModal();
+    } else {
+      settingsModalRef.current.close();
+    }
+  }, [showSettingsModal]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -433,18 +453,15 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Requirement 12: Registration Confirmation Modal with Password Match & Warning */}
       {showRegisterModal && typeof document !== 'undefined' && createPortal(
-        <div
-          onClick={() => setShowRegisterModal(false)}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowRegisterModal(false); }}
-          role="button"
-          tabIndex={0}
+        <dialog
+          ref={registerModalRef}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowRegisterModal(false); }}
+          onKeyDown={(e) => { if (e.key === 'Escape') setShowRegisterModal(false); }}
           className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm text-sm"
         >
           <div
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
-            role="button"
-            tabIndex={0}
             className="w-full max-w-md rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--sg-panel-border)]">
@@ -529,24 +546,21 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </form>
           </div>
-        </div>,
+        </dialog>,
         document.body
       )}
 
       {/* Account Settings Modal (Password Change) */}
       {showSettingsModal && user && typeof document !== 'undefined' && createPortal(
-        <div
-          onClick={() => setShowSettingsModal(false)}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowSettingsModal(false); }}
-          role="button"
-          tabIndex={0}
+        <dialog
+          ref={settingsModalRef}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowSettingsModal(false); }}
+          onKeyDown={(e) => { if (e.key === 'Escape') setShowSettingsModal(false); }}
           className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm text-sm"
         >
           <div
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
-            role="button"
-            tabIndex={0}
             className="w-full max-w-md rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--sg-panel-border)]">
@@ -684,7 +698,7 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </form>
           </div>
-        </div>,
+        </dialog>,
         document.body
       )}
 

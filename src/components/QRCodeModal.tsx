@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import QRCode from 'qrcode';
 import { X, Copy, Check, QrCode } from 'lucide-react';
@@ -33,7 +33,16 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
       .catch((err) => console.error('Failed to generate QR Code:', err));
   }, [isOpen, url]);
 
-  if (!isOpen) return null;
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    if (!dialogRef.current) return;
+    if (isOpen) {
+      dialogRef.current.showModal();
+    } else {
+      dialogRef.current.close();
+    }
+  }, [isOpen]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(url);
@@ -42,18 +51,17 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   };
 
   const modalContent = (
-    <div
-      onClick={onClose}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClose(); }}
-      role="button"
-      tabIndex={0}
+    <dialog
+      ref={dialogRef}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
       className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm font-mono text-xs"
     >
       <div
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
-        role="button"
-        tabIndex={0}
         className="w-full max-w-sm rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl"
       >
         <div className="flex items-center justify-between pb-2 border-b border-[var(--sg-panel-border)]">
@@ -108,7 +116,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
           Scan with any mobile camera to view instantly.
         </div>
       </div>
-    </div>
+    </dialog>
   );
 
   return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
