@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+﻿import React, { useEffect, useState, useMemo } from 'react';
 import { Paste, User } from '../types';
 import { getPaste, recordCopy } from '../api';
 import { decryptClientSide, isClientEncrypted } from '../crypto/clientCrypto';
@@ -286,7 +286,6 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
             onChange={(e) => setPasswordInput(e.target.value)}
             placeholder="Enter passphrase..."
             className="w-full solid-glass-input rounded-md px-3.5 py-2.5 text-[var(--sg-input-text)] outline-none text-sm placeholder-[var(--sg-text-muted)] font-mono"
-            autoFocus
           />
           {passwordError && <p className="text-rose-500 text-xs font-normal">{passwordError}</p>}
           <div className="flex items-center justify-between gap-2 mt-1">
@@ -388,21 +387,21 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
               {!statelessData && (
                 <>
                   <span>Slug: <code className="text-[var(--sg-text)] font-medium">/p/{paste.slug}</code></span>
-                  <span className="opacity-40">•</span>
+                  <span className="opacity-40">â€¢</span>
                 </>
               )}
               <span>Created {formattedDate}</span>
-              <span className="opacity-40">•</span>
+              <span className="opacity-40">â€¢</span>
               <span>Expires {formattedExpiry}</span>
               {paste.authorUsername && (
                 <>
-                  <span className="opacity-40">•</span>
+                  <span className="opacity-40">â€¢</span>
                   <span>by @{paste.authorUsername}</span>
                 </>
               )}
               {!statelessData && (
                 <>
-                  <span className="opacity-40">•</span>
+                  <span className="opacity-40">â€¢</span>
                   <span className="flex items-center gap-1" title="View Count">
                     <Eye className="w-3.5 h-3.5 text-[var(--sg-text-muted)]" /> {paste.views} views
                   </span>
@@ -479,7 +478,7 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
         </div>
       </div>
 
-      {/* Client-side decryption form — shown to ALL users (owner and non-owner) */}
+      {/* Client-side decryption form â€” shown to ALL users (owner and non-owner) */}
       {isClientEnc && clientDecryptedContent === null && (
         <div className="p-6 rounded-lg solid-glass-panel border-emerald-500/30 font-mono text-xs flex flex-col gap-3 max-w-xl mx-auto my-6">
           <div className="flex items-center gap-2 text-emerald-500 font-semibold">
@@ -497,7 +496,6 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
               onChange={(e) => setClientPassphrase(e.target.value)}
               placeholder="Enter decryption passphrase..."
               className="w-full solid-glass-input rounded-md px-3.5 py-2.5 text-[var(--sg-input-text)] outline-none text-sm placeholder-[var(--sg-text-muted)] font-mono"
-              autoFocus
             />
             {clientDecryptError && <p className="text-rose-500 text-xs font-normal">{clientDecryptError}</p>}
             <button
@@ -510,7 +508,7 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
         </div>
       )}
 
-      {/* Main Content Viewer with Line Numbers — only when not (encrypted and undecrypted) */}
+      {/* Main Content Viewer with Line Numbers â€” only when not (encrypted and undecrypted) */}
       {(isClientEnc === false || clientDecryptedContent !== null) && (
         <div className="rounded-lg solid-glass-panel overflow-hidden flex min-h-[420px]">
           {/* Line numbers gutter */}
@@ -608,3 +606,4 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
     </div>
   );
 };
+
