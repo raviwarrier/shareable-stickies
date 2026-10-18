@@ -431,10 +431,16 @@ export const Header: React.FC<HeaderProps> = ({
       {showRegisterModal && typeof document !== 'undefined' && createPortal(
         <div
           onClick={() => setShowRegisterModal(false)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowRegisterModal(false); }}
+          role="button"
+          tabIndex={0}
           className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm text-sm"
         >
           <div
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
+            role="button"
+            tabIndex={0}
             className="w-full max-w-md rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--sg-panel-border)]">
@@ -525,10 +531,16 @@ export const Header: React.FC<HeaderProps> = ({
       {showSettingsModal && user && typeof document !== 'undefined' && createPortal(
         <div
           onClick={() => setShowSettingsModal(false)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowSettingsModal(false); }}
+          role="button"
+          tabIndex={0}
           className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm text-sm"
         >
           <div
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
+            role="button"
+            tabIndex={0}
             className="w-full max-w-md rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--sg-panel-border)]">
