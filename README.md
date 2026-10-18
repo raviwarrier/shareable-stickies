@@ -1,4 +1,4 @@
-# Shareable Stickies v0.3.0
+# Shareable Stickies v0.3.4
 
 Self-hostable modern pastebin for you to use or share with others.
 
@@ -161,8 +161,7 @@ The SAST section is currently empty. Security findings and their fixes will be t
 
 MIT License
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+This project is completely open and free for anyone to use. You are welcome to copy, modify, merge, publish, distribute, or even sell this software without any restrictions or required copyright notices.
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+⚠️ Important Warning:
+While this application has been tested, no software is entirely bug-free. Please thoroughly inspect, test, and validate the code yourself before deploying it into any critical infrastructure, production environment, or high-stakes application. You assume all responsibility for its use.

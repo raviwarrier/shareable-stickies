@@ -363,7 +363,7 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
             <div>
               <h2 className="text-sm font-semibold text-[var(--sg-text)] flex items-center gap-2">
                 <span>Server & Administrator Settings</span>
-                <span className="text-[11px] px-1.5 py-0.5 rounded solid-glass-badge font-normal">v0.3.0</span>
+                <span className="text-[11px] px-1.5 py-0.5 rounded solid-glass-badge font-normal">v0.3.4</span>
               </h2>
               <p className="text-xs text-[var(--sg-text-muted)] font-normal">
                 Configure runtime behavior, security permissions, OIDC SSO, storage drivers, and attachment policies.

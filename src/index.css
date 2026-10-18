@@ -284,7 +284,6 @@ html[data-theme="sepia"] option {
 }
 
 /* Modern Technical Typography: Geist for UI, JetBrains Mono for Inputs & Code */
-:root {
 body, button, nav, header, footer, [role="button"], label, h1, h2, h3, h4, h5, h6, .font-ui {
   font-family: var(--font-ui) ;
 }
