@@ -53,7 +53,7 @@ export const PublicStickies: React.FC<PublicStickiesProps> = ({
     const fullUrl = `${window.location.origin}/p/${slug}`;
     await navigator.clipboard.writeText(fullUrl);
     setCopiedSlug(slug);
-    recordCopy(slug);
+    await recordCopy(slug);
     setTimeout(() => setCopiedSlug(null), 2000);
   };
 

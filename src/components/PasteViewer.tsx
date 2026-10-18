@@ -120,7 +120,9 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
     }
 
     if (slug) {
-      fetchPasteData();
+      void (async () => {
+        await fetchPasteData();
+      })();
     }
   }, [slug, statelessData]);
 
@@ -192,7 +194,7 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
     await navigator.clipboard.writeText(activeContent);
     setCopied(true);
     if (slug) {
-      recordCopy(slug);
+      await recordCopy(slug);
     }
     setTimeout(() => setCopied(false), 2000);
   };
@@ -208,7 +210,7 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
     a.download = filename;
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
+    a.remove();
     URL.revokeObjectURL(url);
   };
 

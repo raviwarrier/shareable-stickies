@@ -50,6 +50,20 @@ interface SettingsSidebarProps {
   onCancelEdit?: () => void;
 }
 
+const SLUG_REGEX = /^[a-zA-Z0-9_-]+$/;
+const SLUG_MIN_LENGTH = 3;
+const SLUG_MAX_LENGTH = 64;
+
+function validateSlugFormat(slug: string): { valid: boolean; message?: string } {
+  if (!SLUG_REGEX.test(slug)) {
+    return { valid: false, message: 'Only letters, numbers, hyphens, and underscores allowed' };
+  }
+  if (slug.length < SLUG_MIN_LENGTH || slug.length > SLUG_MAX_LENGTH) {
+    return { valid: false, message: 'Must be between 3 and 64 characters' };
+  }
+  return { valid: true };
+}
+
 export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
   pasteMode,
   setPasteMode,
@@ -103,19 +117,11 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
       return;
     }
 
-    const regex = /^[a-zA-Z0-9_-]+$/;
-    if (!regex.test(customSlug.trim())) {
+    const formatResult = validateSlugFormat(customSlug.trim());
+    if (!formatResult.valid) {
       setSlugValidation({
         valid: false,
-        message: 'Only letters, numbers, hyphens, and underscores allowed',
-        checking: false,
-      });
-      return;
-    }
-    if (customSlug.trim().length < 3 || customSlug.trim().length > 64) {
-      setSlugValidation({
-        valid: false,
-        message: 'Must be between 3 and 64 characters',
+        message: formatResult.message,
         checking: false,
       });
       return;

@@ -48,3 +48,4 @@ sonar-project.properties
 .turbo/
 .next/
 out/
+.clinerules
