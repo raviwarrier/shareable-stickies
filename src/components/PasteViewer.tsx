@@ -75,12 +75,12 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [qrModalOpen, setQrModalOpen] = useState(false);
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     let url = window.location.href;
     if (paste?.slug && !statelessData) {
       url = `${window.location.origin}/p/${paste.slug}`;
     }
-    navigator.clipboard.writeText(url);
+    await navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
