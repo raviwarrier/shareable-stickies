@@ -583,18 +583,18 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
 
       {/* Fullscreen Image Modal */}
       {selectedImage && (
-        <div
+        <button
           onClick={() => setSelectedImage(null)}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedImage(null); }}
-          tabIndex={0}
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 cursor-zoom-out"
+          type="button"
         >
           <img
             src={selectedImage}
             alt="Preview"
             className="max-w-full max-h-full rounded-md border border-[var(--sg-panel-border)] shadow-2xl object-contain"
           />
-        </div>
+        </button>
       )}
 
       {/* QR Code Modal */}

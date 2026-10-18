@@ -19,7 +19,7 @@ export interface StorageDriver {
 }
 
 export class LocalStorageDriver implements StorageDriver {
-  private uploadDir: string;
+  private readonly uploadDir: string;
 
   constructor(customUploadDir?: string) {
     this.uploadDir = path.resolve(process.cwd(), customUploadDir || process.env.UPLOAD_DIR || './uploads');

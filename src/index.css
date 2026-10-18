@@ -41,6 +41,8 @@
   --sg-badge-border: rgba(255, 255, 255, 0.12);
   --sg-badge-text: #cbd5e1;
   --sg-blur: 24px;
+  --font-ui: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-inputs: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 html[data-theme="light"] {
@@ -283,10 +285,6 @@ html[data-theme="sepia"] option {
 
 /* Modern Technical Typography: Geist for UI, JetBrains Mono for Inputs & Code */
 :root {
-  --font-ui: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-inputs: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-}
-
 body, button, nav, header, footer, [role="button"], label, h1, h2, h3, h4, h5, h6, .font-ui {
   font-family: var(--font-ui) ;
 }
@@ -746,7 +744,7 @@ html[data-theme="sepia"] header {
 html[data-theme="sepia"] footer {
   background-color: #f4ecd8 ;
   border-color: #dfd3be ;
-  color: #7a6e60 ;
+  color: #6b6e60 ;
 }
 
 /* Primary surface backgrounds (Card, Panes, Modals, Root Main) */
@@ -945,7 +943,7 @@ html[data-theme="sepia"] .text-\[\#71717a\] {
 }
 
 html[data-theme="sepia"] .text-zinc-500 {
-  color: #7a6e60 ;
+  color: #6b6e60 ;
 }
 
 /* Accessible Accent Typography */
@@ -976,7 +974,7 @@ html[data-theme="sepia"] select {
 }
 
 html[data-theme="sepia"] ::placeholder {
-  color: #7a6e60 ;
+  color: #6b6e60 ;
 }
 
 /* Sepia Mode Prism Syntax Highlighting Overrides */
@@ -1057,4 +1055,5 @@ html[data-theme="sepia"] .prose-invert {
   --tw-prose-th-borders: #dfd3be ;
   --tw-prose-td-borders: #dfd3be ;
 }
+
 

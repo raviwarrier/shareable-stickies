@@ -48,6 +48,9 @@ Added htmlFor/id associations to AdminSettingsModal form labels - because of rul
 Added htmlFor/id associations to Dashboard.tsx form labels - because of rule typescript:S6853 (CODE_SMELL, MAJOR)
 Changed label to span for non-interactive text in SettingsSidebar - because of rule typescript:S6853 (CODE_SMELL, MAJOR)
 Added keyboard listener and role to SettingsSidebar visibility buttons - because of rule typescript:S6848 (CODE_SMELL, MAJOR) and typescript:S1082 (BUG, MINOR)
+Added role="button", tabIndex={0}, and keyboard listener to AdminSettingsModal file type category divs (3 instances) - because of rule typescript:S6848 (CODE_SMELL, MAJOR) and typescript:S1082 (BUG, MINOR)
+Added role="button", tabIndex={0}, and keyboard listener to AdminSettingsModal storage driver divs (3 instances) - because of rule typescript:S6848 (CODE_SMELL, MAJOR) and typescript:S1082 (BUG, MINOR)
+Replaced inline blockquote HTML in index.css with CSS variable to fix duplicate selector (css:S4666) - DOCKERFILE: removed duplicate :root block
 Replaced inline union type 'public' | 'unlisted' | 'private' with PasteVisibility type alias - because of rule typescript:S4323 (CODE_SMELL, MINOR)
 Replaced inline union types 'dark' | 'light' | 'sepia' and 'local' | 'cloudinary' | 's3' with AppTheme/StorageDriverType type aliases - because of rule typescript:S4323 (CODE_SMELL, MINOR)
 Replaced `fs` import with `node:fs` in server.ts - because of rule typescript:S7772 (CODE_SMELL, MINOR)

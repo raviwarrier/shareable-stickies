@@ -928,33 +928,23 @@ class Database {
 
   private backfillAppSettingsDefaults(): void {
     const settings = this.schema.appSettings!;
-    if (!settings.defaultTheme) {
-      const mode = (process.env.DEFAULT_THEME || process.env.THEME_MODE || 'dark') as 'dark' | 'light' | 'sepia';
-      settings.defaultTheme = ['dark', 'light', 'sepia'].includes(mode) ? mode : 'dark';
-    }
-    if (settings.allowAnonymousCreation === undefined) {
-      settings.allowAnonymousCreation = process.env.ALLOW_ANONYMOUS_CREATION === 'true' || process.env.ALLOW_PUBLIC_STICKIES === 'true';
-    }
-    if (!settings.storageDriver) {
-      const drv = (process.env.STORAGE_DRIVER || 'local') as 'local' | 'cloudinary' | 's3';
-      settings.storageDriver = ['local', 'cloudinary', 's3'].includes(drv) ? drv : 'local';
-    }
-    if (!settings.cloudinaryConfig) {
-      settings.cloudinaryConfig = {
+    settings.defaultTheme ??= (process.env.DEFAULT_THEME || process.env.THEME_MODE || 'dark') as 'dark' | 'light' | 'sepia';
+    settings.defaultTheme = ['dark', 'light', 'sepia'].includes(settings.defaultTheme) ? settings.defaultTheme : 'dark';
+    settings.allowAnonymousCreation ??= process.env.ALLOW_ANONYMOUS_CREATION === 'true' || process.env.ALLOW_PUBLIC_STICKIES === 'true';
+    settings.storageDriver ??= (process.env.STORAGE_DRIVER || 'local') as 'local' | 'cloudinary' | 's3';
+    settings.storageDriver = ['local', 'cloudinary', 's3'].includes(settings.storageDriver) ? settings.storageDriver : 'local';
+    settings.cloudinaryConfig ??= {
         cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
         apiKey: process.env.CLOUDINARY_API_KEY || '',
         apiSecret: process.env.CLOUDINARY_API_SECRET || '',
       };
-    }
-    if (!settings.s3Config) {
-      settings.s3Config = {
+    settings.s3Config ??= {
         bucketName: process.env.AWS_BUCKET_NAME || '',
         region: process.env.AWS_REGION || 'us-east-1',
         accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
         endpoint: process.env.AWS_ENDPOINT || '',
       };
-    }
     if (!settings.fileTypeCategories) {
       settings.fileTypeCategories = {
         documents: process.env.ALLOW_DOCUMENTS !== 'false',

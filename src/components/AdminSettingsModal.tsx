@@ -775,7 +775,15 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                     {/* Driver Radio Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div
+                        key="storage-local"
+                        role="button"
+                        tabIndex={0}
                         onClick={() => setStorageDriver('local')}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            setStorageDriver('local');
+                          }
+                        }}
                         className={`p-3.5 rounded-md border cursor-pointer transition flex flex-col gap-2 ${
                           storageDriver === 'local'
                             ? 'solid-glass-btn-active border-[var(--sg-btn-active-border)] ring-1 ring-[var(--sg-text)]/20'
@@ -797,7 +805,15 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                       </div>
 
                       <div
+                        key="storage-cloudinary"
+                        role="button"
+                        tabIndex={0}
                         onClick={() => setStorageDriver('cloudinary')}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            setStorageDriver('cloudinary');
+                          }
+                        }}
                         className={`p-3.5 rounded-md border cursor-pointer transition flex flex-col gap-2 ${
                           storageDriver === 'cloudinary'
                             ? 'solid-glass-btn-active border-[var(--sg-btn-active-border)] ring-1 ring-[var(--sg-text)]/20'
@@ -816,7 +832,15 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                       </div>
 
                       <div
+                        key="storage-s3"
+                        role="button"
+                        tabIndex={0}
                         onClick={() => setStorageDriver('s3')}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            setStorageDriver('s3');
+                          }
+                        }}
                         className={`p-3.5 rounded-md border cursor-pointer transition flex flex-col gap-2 ${
                           storageDriver === 's3'
                             ? 'solid-glass-btn-active border-[var(--sg-btn-active-border)] ring-1 ring-[var(--sg-text)]/20'
@@ -1202,12 +1226,22 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                           return (
                             <div
                               key={cat.key}
+                              role="button"
+                              tabIndex={0}
                               onClick={() =>
                                 setFileTypeCategories({
                                   ...fileTypeCategories,
                                   [cat.key]: !isEnabled,
                                 })
                               }
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  setFileTypeCategories({
+                                    ...fileTypeCategories,
+                                    [cat.key]: !isEnabled,
+                                  });
+                                }
+                              }}
                               className={`p-3 rounded-md border transition cursor-pointer flex items-center justify-between gap-3 ${
                                 isEnabled
                                   ? 'solid-glass-panel border-[var(--sg-btn-active-border)] ring-1 ring-[var(--sg-text)]/10'

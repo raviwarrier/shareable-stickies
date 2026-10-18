@@ -46,6 +46,15 @@ export const Header: React.FC<HeaderProps> = ({
   const [authError, setAuthError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const getThemeIcon = (t: 'dark' | 'light' | 'sepia') => {
+    switch (t) {
+      case 'dark': return <Moon className="w-4 h-4 text-slate-300" />;
+      case 'light': return <Sun className="w-4 h-4 text-slate-700" />;
+      case 'sepia': return <BookOpen className="w-4 h-4 text-[#8a6842]" />;
+      default: return <Moon className="w-4 h-4 text-slate-300" />;
+    }
+  };
+
   // Requirement 12: Registration Confirmation Modal state
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -242,13 +251,7 @@ export const Header: React.FC<HeaderProps> = ({
               title={`Current theme: ${theme}. Click to switch theme.`}
               aria-label={`Current theme: ${theme}. Click to switch theme.`}
             >
-              {theme === 'dark' ? (
-                <Moon className="w-4 h-4 text-slate-300" />
-              ) : theme === 'light' ? (
-                <Sun className="w-4 h-4 text-slate-700" />
-              ) : (
-                <BookOpen className="w-4 h-4 text-[#8a6842]" />
-              )}
+              {getThemeIcon(theme)}
             </button>
 
             {/* @username dropdown menu */}

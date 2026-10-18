@@ -23,7 +23,7 @@ function sanitizeInput(value: unknown): string {
   if (value === null || value === undefined) return '';
   if (typeof value !== 'string') return String.prototype.toString.call(value);
   return value
-    .replaceAll(String.fromCharCode(0), '')                      // remove null bytes
+    .replaceAll(String.raw`\0`, '')                      // remove null bytes
     .replace(/[\x00-\x1f\x7f-\x9f]/g, '');   // remove control characters
 }
 
