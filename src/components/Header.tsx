@@ -209,6 +209,8 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
+  const chevronRotate = userDropdownOpen ? 'rotate-180' : '';
+
   return (
     <header className="solid-glass-bar sticky top-0 z-[100] transition-colors duration-200">
       {/* Primary Navigation Bar */}
@@ -269,7 +271,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <span className="text-[10px] px-1.5 py-0.5 rounded solid-glass-badge uppercase font-mono hidden sm:inline-block">
                     {user.role}
                   </span>
-                  <ChevronDown className={`w-3.5 h-3.5 text-[var(--sg-text-muted)] transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 text-[var(--sg-text-muted)] transition-transform duration-200 ${chevronRotate}`} />
                 </button>
 
                 {/* Dropdown Menu */}
