@@ -189,10 +189,10 @@ export const PublicStickies: React.FC<PublicStickiesProps> = ({
             return (
               <div
                 key={item.id}
-                onClick={() => onNavigate(`/p/${item.slug}`)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate(`/p/${item.slug}`); }}
                 role="button"
                 tabIndex={0}
+                onClick={() => onNavigate(`/p/${item.slug}`)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate(`/p/${item.slug}`); }}
                 className="group relative p-3.5 rounded-lg solid-glass-panel border hover:border-[var(--sg-btn-active-border)] transition-all flex flex-col justify-between gap-3 cursor-pointer shadow-md"
               >
                 <div>
