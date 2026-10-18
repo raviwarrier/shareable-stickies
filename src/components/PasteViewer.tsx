@@ -146,14 +146,12 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
     setPasswordError(null);
     try {
       const res = await getPaste(slug, { password: pwd });
+      setPaste(res.paste);
       if (res.requiresPassword) {
         setRequiresPassword(true);
-        setPaste(res.paste);
       } else {
         setRequiresPassword(false);
-        setPaste(res.paste);
         await handleClientSideDecryption(res.paste, pwd);
-
         if (res.paste.burnAfterReading || res.paste.isBurnedNow) {
           setBurnedNotice(true);
         }
