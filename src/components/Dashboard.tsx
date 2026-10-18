@@ -897,7 +897,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onEditPa
           onClose={() => setShowAdminSettingsModal(false)}
           currentUser={user}
           onUserUpdate={() => {}}
-          currentTheme={((typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) as any) || 'dark'}
+          currentTheme={((typeof document !== 'undefined' && document.documentElement.dataset.theme) as any) || 'dark'}
           onThemeChange={(newTheme) => {
             if (typeof document !== 'undefined') {
               document.documentElement.dataset.theme = newTheme;

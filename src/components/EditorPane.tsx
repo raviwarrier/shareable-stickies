@@ -145,6 +145,29 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const renderPreviewPane = () => {
+    if (syntax === 'markdown') {
+      return (
+        <div
+          className="prose prose-invert prose-base max-w-none prose-pre:bg-black/20 prose-pre:border prose-pre:border-[var(--sg-panel-border)] prose-a:text-sky-500"
+          dangerouslySetInnerHTML={{ __html: renderedMarkdown || '<p class="text-[var(--sg-text-muted)] font-mono text-sm">Markdown preview empty</p>' }}
+        />
+      );
+    }
+    return (
+      <div className="font-mono text-sm md:text-base leading-7 select-text overflow-x-auto">
+        <pre className={`language-${syntax} !bg-transparent !p-0 !m-0`}>
+          <code
+            className={`language-${syntax}`}
+            dangerouslySetInnerHTML={{
+              __html: highlightCode(content, syntax) || '<span class="text-[var(--sg-text-muted)]">Preview empty</span>',
+            }}
+          />
+        </pre>
+      </div>
+    );
+  };
+
   return (
     <div className="flex-1 flex flex-col min-w-0 solid-glass-panel rounded-lg overflow-hidden transition-all duration-200">
       {/* Editor Top Bar - Solid Glass */}
@@ -303,28 +326,11 @@ export const EditorPane: React.FC<EditorPaneProps> = ({
           </div>
         )}
 
-        {/* Live Preview Pane (shown in 'preview' or 'split') */}
-        {editorViewMode !== 'edit' && (
-          <div className="flex-1 p-5 overflow-y-auto bg-black/5 dark:bg-black/15 text-[var(--sg-text)] font-sans text-sm md:text-base">
-            {syntax === 'markdown' ? (
-              <div
-                className="prose prose-invert prose-base max-w-none prose-pre:bg-black/20 prose-pre:border prose-pre:border-[var(--sg-panel-border)] prose-a:text-sky-500"
-                dangerouslySetInnerHTML={{ __html: renderedMarkdown || '<p class="text-[var(--sg-text-muted)] font-mono text-sm">Markdown preview empty</p>' }}
-              />
-            ) : (
-              <div className="font-mono text-sm md:text-base leading-7 select-text overflow-x-auto">
-                <pre className={`language-${syntax} !bg-transparent !p-0 !m-0`}>
-                  <code
-                    className={`language-${syntax}`}
-                    dangerouslySetInnerHTML={{
-                      __html: highlightCode(content, syntax) || '<span class="text-[var(--sg-text-muted)]">Preview empty</span>',
-                    }}
-                  />
-                </pre>
+            {editorViewMode !== 'edit' && (
+              <div className="flex-1 p-5 overflow-y-auto bg-black/5 dark:bg-black/15 text-[var(--sg-text)] font-sans text-sm md:text-base">
+                {renderPreviewPane()}
               </div>
             )}
-          </div>
-        )}
       </div>
 
       {/* Attachment Preview Strip */}
