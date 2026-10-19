@@ -31,7 +31,7 @@ RUN npm run build && \
 # Create entrypoint script that fixes volume ownership at runtime.
 # Volumes mounted from the host may have different ownership than nodejs,
 # so we chown at startup before dropping privileges.
-RUN echo '#!/bin/sh\nchown -R nodejs:nodejs /app/data /app/uploads 2>/dev/null || true\nexec su -s /bin/sh nodejs -c "exec node node_modules/.bin/tsx server.ts"' > /usr/local/bin/start.sh && \
+RUN echo '#!/bin/sh\nchown -R nodejs:nodejs /app/data /app/uploads 2>/dev/null || true\nexec su -s /bin/sh nodejs -c "exec node /app/node_modules/.bin/tsx /app/server.ts"' > /usr/local/bin/start.sh && \
     chmod +x /usr/local/bin/start.sh
 
 USER root
@@ -41,4 +41,6 @@ EXPOSE 3000
 ENV NODE_ENV=production
 ENV PORT=3000
 
-CMD ["start.sh"]
+WORKDIR /app
+
+CMD ["sh", "/usr/local/bin/start.sh"]
