@@ -61,20 +61,83 @@ pm2 save
 
 ### Docker
 
+#### Option 1: Pull pre-built image from GitHub Container Registry (recommended)
+
+```bash
+# Login to GitHub Container Registry (PAT with `write:packages` scope)
+echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
+
+# Pull and run
+docker pull ghcr.io/raviwarrier/shareable-stickies:latest
+docker run -d --name shareable-stickies -p 3000:3000 --env-file .env ghcr.io/raviwarrier/shareable-stickies:latest
+```
+
+#### Option 2: Build from source
+
 ```bash
 git clone https://github.com/raviwarrier/shareable-stickies.git
 cd shareable-stickies
 cp .env.example .env
-# Edit .env as needed
-docker build -t shareable-stickies .
-docker run -d -p 3000:3000 --env-file .env shareable-stickies
+# Edit .env with your settings (ENCRYPTION_SECRET, ADMIN_PASSWORD, etc.)
+docker build -t shareable-stickies:latest .
+docker run -d --name shareable-stickies -p 3000:3000 --env-file .env shareable-stickies:latest
 ```
 
-Or with Docker Compose:
+#### Docker Compose
 
 ```bash
+git clone https://github.com/raviwarrier/shareable-stickies.git
+cd shareable-stickies
+cp .env.example .env
+# Edit .env as needed (especially ENCRYPTION_SECRET and ADMIN_PASSWORD)
 docker-compose up -d
 ```
+
+View logs:
+
+```bash
+docker-compose logs -f
+```
+
+Stop:
+
+```bash
+docker-compose down
+```
+
+#### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3000` | Server port |
+| `NODE_ENV` | `production` | Node environment |
+| `ENCRYPTION_SECRET` | *(required)* | 32-byte encryption key for at-rest data |
+| `ADMIN_USERNAME` | `admin` | Admin login username |
+| `ADMIN_PASSWORD` | *(required)* | Admin login password |
+| `STORAGE_DRIVER` | `local` | `local`, `cloudinary`, or `s3` |
+| `ALLOW_PUBLIC_PASTES` | `true` | Allow anonymous paste creation |
+| `ALLOW_DOCUMENTS` | `true` | Allow document attachments |
+| `ALLOW_CODE` | `true` | Allow code file attachments |
+| `ALLOW_IMAGES` | `true` | Allow image attachments |
+| `ALLOW_VIDEO` | `true` | Allow video attachments |
+| `ALLOW_AUDIO` | `true` | Allow audio attachments |
+| `ALLOW_ARCHIVES` | `true` | Allow archive attachments |
+| `ALLOW_OTHER` | `true` | Allow other non-executable files |
+| `MAX_FILE_SIZE` | `15728640` | Max upload size in bytes (default 15MB) |
+| `UPLOAD_DIR` | `./uploads` | Local upload directory |
+| `DATA_DIR` | `./data` | Data directory for stickies.json |
+| `DEFAULT_THEME` | `dark` | Default UI theme |
+| `OIDC_ENABLED` | `false` | Enable OIDC SSO |
+| `OIDC_PROVIDER_NAME` | `Enterprise SSO` | OIDC provider display name |
+| `OIDC_ISSUER_URL` | *(empty)* | OIDC issuer URL |
+| `OIDC_CLIENT_ID` | *(empty)* | OIDC client ID |
+| `OIDC_CLIENT_SECRET` | *(empty)* | OIDC client secret |
+| `OIDC_ALLOWED_DOMAINS` | `*` | Allowed email domains |
+| `OIDC_REQUIRE_OIDC_ONLY` | `false` | Require OIDC only (disable password auth) |
+
+Volumes mounted by Docker Compose:
+- `./data` → `/app/data` (stores stickies.json database)
+- `./uploads` → `/app/uploads` (stores attached files)
 
 ## Update Instructions
 

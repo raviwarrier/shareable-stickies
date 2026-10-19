@@ -8,5 +8,33 @@ uploads/*
 !uploads/.gitkeep
 .env
 .env.local
+.env.development.local
+.env.test.local
+.env.production.local
 *.log
+*.log.*
 .clinerules
+
+# SAST / security scanning results
+sonarcloud/
+sonar-reports/
+sonar-project.properties
+sonarcloud_extracted_issues_*.txt
+fixes.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Cache & temp
+.cache/
+.turbo/
+*.tmp
+*.temp
+
+# OS
+.DS_Store
+Thumbs.db

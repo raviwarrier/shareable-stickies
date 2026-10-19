@@ -9,9 +9,9 @@ WORKDIR /app
 # Install build dependencies if needed
 RUN apk add --no-cache libc6-compat
 
-# Copy package manifests and install all dependencies
-COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts
+# Copy package manifest and install all dependencies
+COPY package.json ./
+RUN npm install --legacy-peer-deps --ignore-scripts
 
 # Copy only necessary files
 COPY --chown=nodejs:nodejs package.json ./
