@@ -11,7 +11,7 @@ RUN apk add --no-cache libc6-compat su-exec
 
 # Copy package manifests and install all dependencies using lockfile
 COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts
+RUN npm install --legacy-peer-deps --ignore-scripts
 
 # Copy only necessary files
 COPY --chown=nodejs:nodejs package.json ./
