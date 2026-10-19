@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import QRCode from 'qrcode';
 import { X, Copy, Check, QrCode } from 'lucide-react';
@@ -33,16 +33,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
       .catch((err) => console.error('Failed to generate QR Code:', err));
   }, [isOpen, url]);
 
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    if (!dialogRef.current) return;
-    if (isOpen) {
-      dialogRef.current.showModal();
-    } else {
-      dialogRef.current.close();
-    }
-  }, [isOpen]);
+  if (!isOpen) return null;
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(url);
@@ -51,22 +42,17 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   };
 
   const modalContent = (
-    <dialog
-      ref={dialogRef}
-      role="dialog"
-      tabIndex={0}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
-      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm font-mono text-xs"
-    >
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
-        className="w-full max-w-sm rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl"
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm font-mono text-xs">
+      <button
+        type="button"
+        aria-label="Close modal backdrop"
+        onClick={onClose}
+        className="fixed inset-0 bg-black/60 cursor-default border-0 p-0 m-0 w-full h-full"
+      />
+      <dialog
+        open
+        aria-label="Instant Mobile QR Code"
+        className="relative z-10 w-full max-w-sm rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl"
       >
         <div className="flex items-center justify-between pb-2 border-b border-[var(--sg-panel-border)]">
           <div className="flex items-center gap-2 text-[var(--sg-text)] font-semibold text-sm">
@@ -74,9 +60,9 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
             <span>Instant Mobile QR Code</span>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClose(); }}
-            tabIndex={0}
+            aria-label="Close QR Code modal"
             className="p-1 rounded-md solid-glass-btn text-[var(--sg-text-muted)] hover:text-[var(--sg-text)] transition cursor-pointer"
           >
             <X className="w-4 h-4" />
@@ -108,6 +94,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
             className="flex-1 bg-transparent px-2 text-xs text-[var(--sg-input-text)] outline-none select-all truncate font-mono"
           />
           <button
+            type="button"
             onClick={handleCopy}
             className="px-3 py-1.5 rounded-md solid-glass-btn-primary text-xs font-semibold flex items-center gap-1.5 shrink-0 transition cursor-pointer"
           >
@@ -119,8 +106,8 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
         <div className="text-[11px] text-[var(--sg-text-muted)] text-center font-normal">
           Scan with any mobile camera to view instantly.
         </div>
-      </div>
-    </dialog>
+      </dialog>
+    </div>
   );
 
   return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;

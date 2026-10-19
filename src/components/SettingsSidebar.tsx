@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User } from '../types';
 import { validateCustomSlug } from '../api';
 import { QRCodeModal } from './QRCodeModal';
@@ -63,6 +63,297 @@ function validateSlugFormat(slug: string): { valid: boolean; message?: string } 
   }
   return { valid: true };
 }
+
+interface SlugInputControlProps {
+  customSlug: string;
+  setCustomSlug: (val: string) => void;
+  onGenerateSlug: () => void;
+  slugValidation: { valid?: boolean; message?: string; checking?: boolean };
+}
+
+const SlugInputControl: React.FC<SlugInputControlProps> = ({
+  customSlug,
+  setCustomSlug,
+  onGenerateSlug,
+  slugValidation,
+}) => {
+  const renderStatus = () => {
+    if (slugValidation.checking) {
+      return (
+        <span className="text-[var(--sg-text-muted)] flex items-center gap-1">
+          <Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking availability...
+        </span>
+      );
+    }
+    if (slugValidation.valid) {
+      return (
+        <span className="text-emerald-500 flex items-center gap-1 font-medium">
+          <CheckCircle2 className="w-3.5 h-3.5" /> Available link
+        </span>
+      );
+    }
+    return (
+      <span className="text-rose-500 flex items-center gap-1 font-medium">
+        <AlertCircle className="w-3.5 h-3.5" /> {slugValidation.message}
+      </span>
+    );
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="text-sm font-medium text-[var(--sg-text)] flex items-center justify-between" htmlFor="custom-slug-input">
+        <span className="flex items-center gap-2">
+          <Link className="w-4 h-4 text-[var(--sg-text-muted)]" />
+          Custom link
+        </span>
+        <span className="solid-glass-badge text-xs font-normal px-2 py-0.5 rounded shadow-xs">
+          Optional
+        </span>
+      </label>
+
+      <div className="flex items-center rounded-md solid-glass-input overflow-hidden">
+        <input
+          id="custom-slug-input"
+          type="text"
+          value={customSlug}
+          onChange={(e) => setCustomSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
+          placeholder="custom-link-name"
+          className="w-full bg-transparent px-3.5 py-2.5 text-[var(--sg-input-text)] outline-none text-sm placeholder-[var(--sg-text-muted)] font-mono"
+        />
+        <button
+          type="button"
+          onClick={onGenerateSlug}
+          className="px-3.5 py-2.5 text-[var(--sg-text)] hover:bg-black/5 dark:hover:bg-white/10 border-l border-[var(--sg-panel-border)] transition cursor-pointer flex items-center gap-1.5 text-xs font-medium shrink-0"
+          title="Generate random custom link"
+        >
+          <Shuffle className="w-4 h-4 text-[var(--sg-text-muted)]" />
+          <span>Generate</span>
+        </button>
+      </div>
+
+      {customSlug.trim() && (
+        <div className="flex items-center gap-1.5 text-xs mt-0.5">
+          {renderStatus()}
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface PasswordInputControlProps {
+  password: string;
+  setPassword: (val: string) => void;
+  showPassword: boolean;
+  setShowPassword: (val: boolean) => void;
+  copiedPassphrase: boolean;
+  onCopyPassphrase: () => void;
+  onGeneratePassword: () => void;
+}
+
+const PasswordInputControl: React.FC<PasswordInputControlProps> = ({
+  password,
+  setPassword,
+  showPassword,
+  setShowPassword,
+  copiedPassphrase,
+  onCopyPassphrase,
+  onGeneratePassword,
+}) => {
+  const toggleTitle = showPassword ? 'Hide password' : 'Show password';
+  const copyTitle = copiedPassphrase ? 'Password copied to clipboard' : 'Copy password to clipboard';
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="flex items-center justify-between text-xs font-semibold text-[var(--sg-text)]" htmlFor="password-input">
+        <span className="flex items-center gap-1.5">
+          <Lock className="w-3.5 h-3.5 text-[var(--sg-text-muted)]" />
+          Password Protection
+        </span>
+        <span className="solid-glass-badge text-xs font-normal px-2 py-0.5 rounded shadow-xs">
+          Optional
+        </span>
+      </label>
+
+      <div className="flex items-center rounded-md solid-glass-input overflow-hidden">
+        <input
+          id="password-input"
+          type={showPassword ? 'text' : 'password'}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Enter or generate password..."
+          className="w-full bg-transparent px-3.5 py-2.5 text-[var(--sg-input-text)] outline-none text-sm placeholder-[var(--sg-text-muted)] font-mono"
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="px-2.5 py-2 text-[var(--sg-text-muted)] hover:text-[var(--sg-text)] transition cursor-pointer flex items-center justify-center shrink-0"
+          title={toggleTitle}
+          aria-label={toggleTitle}
+        >
+          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        </button>
+
+        {password && (
+          <button
+            type="button"
+            onClick={onCopyPassphrase}
+            className="px-3 py-2.5 text-[var(--sg-text)] hover:bg-black/5 dark:hover:bg-white/10 border-l border-[var(--sg-panel-border)] transition cursor-pointer flex items-center justify-center text-xs font-medium shrink-0"
+            title={copyTitle}
+            aria-label={copyTitle}
+          >
+            {copiedPassphrase ? (
+              <Check className="w-4 h-4 text-emerald-500" />
+            ) : (
+              <Copy className="w-4 h-4 text-[var(--sg-text-muted)]" />
+            )}
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={onGeneratePassword}
+          className="px-3 py-2.5 text-[var(--sg-text)] hover:bg-black/5 dark:hover:bg-white/10 border-l border-[var(--sg-panel-border)] transition cursor-pointer flex items-center justify-center text-xs font-medium shrink-0"
+          title="Generate random secure password"
+          aria-label="Generate random secure password"
+        >
+          <Key className="w-4 h-4 text-[var(--sg-text-muted)]" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+interface SidebarSubmitActionsProps {
+  pasteMode: 'database' | 'stateless';
+  onSubmit: () => void;
+  onStatelessSubmit: () => void;
+  isSubmitting: boolean;
+  customSlug: string;
+  slugValid?: boolean;
+  hasStatelessImageConflict: boolean;
+  editingPaste?: any;
+}
+
+const SidebarSubmitActions: React.FC<SidebarSubmitActionsProps> = ({
+  pasteMode,
+  onSubmit,
+  onStatelessSubmit,
+  isSubmitting,
+  customSlug,
+  slugValid,
+  hasStatelessImageConflict,
+  editingPaste,
+}) => {
+  if (pasteMode === 'stateless') {
+    return (
+      <button
+        type="button"
+        onClick={onStatelessSubmit}
+        disabled={hasStatelessImageConflict || isSubmitting}
+        className="w-full mt-2 py-2.5 px-4 rounded-md solid-glass-btn-primary text-sm font-medium transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        <Zap className="w-4 h-4" />
+        <span>Generate stateless sticky</span>
+      </button>
+    );
+  }
+
+  const isSaveMode = Boolean(editingPaste);
+  const submitDisabled = isSubmitting || (customSlug.trim() !== '' && slugValid === false);
+
+  return (
+    <button
+      type="button"
+      onClick={onSubmit}
+      disabled={submitDisabled}
+      className="w-full mt-2 py-2.5 px-4 rounded-md solid-glass-btn-primary text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+    >
+      {isSubmitting ? (
+        <>
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span>{isSaveMode ? 'Saving sticky...' : 'Creating sticky...'}</span>
+        </>
+      ) : (
+        <span>{isSaveMode ? 'Save sticky' : 'Create sticky'}</span>
+      )}
+    </button>
+  );
+};
+
+interface SidebarShareableResultProps {
+  pasteMode: 'database' | 'stateless';
+  lastCreatedUrl: string;
+  lastCreatedSlug: string | null;
+  fullShareUrl: string;
+  copiedLink: boolean;
+  onCopyLink: () => void;
+  onNavigate: (path: string) => void;
+  onOpenQr: () => void;
+}
+
+const SidebarShareableResult: React.FC<SidebarShareableResultProps> = ({
+  pasteMode,
+  lastCreatedUrl,
+  lastCreatedSlug,
+  fullShareUrl,
+  copiedLink,
+  onCopyLink,
+  onNavigate,
+  onOpenQr,
+}) => {
+  const isDb = pasteMode === 'database';
+  const targetPath = lastCreatedSlug ? `/p/${lastCreatedSlug}` : lastCreatedUrl;
+  const buttonLabel = lastCreatedSlug ? 'Open View' : 'Open Link';
+  const copyLabel = copiedLink ? 'Copied' : 'Copy';
+
+  return (
+    <div className="p-4 rounded-lg solid-glass-panel border-emerald-500/30 flex flex-col gap-3 shadow-xl">
+      <div className="flex items-center justify-between text-xs text-emerald-500 font-medium">
+        <span className="flex items-center gap-1.5">
+          <CheckCircle2 className="w-4 h-4" />
+          {isDb ? 'Sticky created' : 'Stateless sticky ready'}
+        </span>
+        <span className="text-[var(--sg-text-muted)] font-normal">Shareable link</span>
+      </div>
+
+      <div className="flex items-center gap-1.5 solid-glass-input rounded-md p-2">
+        <code className="text-[var(--sg-text)] flex-1 truncate text-xs select-all font-mono">
+          {fullShareUrl}
+        </code>
+        <button
+          type="button"
+          onClick={onCopyLink}
+          className="px-2.5 py-1.5 rounded-md solid-glass-btn transition cursor-pointer flex items-center gap-1 text-xs font-medium"
+          title="Copy full link"
+        >
+          {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+          <span>{copyLabel}</span>
+        </button>
+      </div>
+
+      <div className="flex items-center gap-2 pt-1">
+        <button
+          type="button"
+          onClick={() => onNavigate(targetPath)}
+          className="flex-1 py-2 px-3 rounded-md solid-glass-btn-primary text-center transition flex items-center justify-center gap-1.5 text-xs font-medium cursor-pointer"
+        >
+          <ExternalLink className="w-3.5 h-3.5" />
+          <span>{buttonLabel}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onOpenQr}
+          className="py-2 px-3 rounded-md solid-glass-btn text-center transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
+          title="Show QR Code"
+        >
+          <QrCode className="w-3.5 h-3.5" />
+          <span>QR</span>
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
   pasteMode,
@@ -176,28 +467,6 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
 
   const hasStatelessImageConflict = pasteMode === 'stateless' && attachmentsCount > 0;
 
-  const renderSlugValidationStatus = () => {
-    if (slugValidation.checking) {
-      return (
-        <span className="text-[var(--sg-text-muted)] flex items-center gap-1">
-          <Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking availability...
-        </span>
-      );
-    }
-    if (slugValidation.valid) {
-      return (
-        <span className="text-emerald-500 flex items-center gap-1 font-medium">
-          <CheckCircle2 className="w-3.5 h-3.5" /> Available link
-        </span>
-      );
-    }
-    return (
-      <span className="text-rose-500 flex items-center gap-1 font-medium">
-        <AlertCircle className="w-3.5 h-3.5" /> {slugValidation.message}
-      </span>
-    );
-  };
-
   return (
     <div className="w-full lg:w-88 flex flex-col gap-3 font-mono text-sm">
       {/* Active Edit Mode Banner */}
@@ -221,7 +490,7 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
         </div>
       )}
 
-      {/* Mode Switcher: Regular Sticky vs Stateless Sticky */}
+      {/* Paste Mode Toggle */}
       <div className="p-1 rounded-md solid-glass-panel grid grid-cols-2 gap-1 text-sm">
         <button
           type="button"
@@ -252,46 +521,15 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
 
       {/* Paste Configuration Card */}
       <div className="p-4 rounded-lg solid-glass-panel flex flex-col gap-3.5">
-        {/* Database Specific: Custom link */}
+        {/* Database Specific Settings */}
         {pasteMode === 'database' ? (
           <>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-[var(--sg-text)] flex items-center justify-between" htmlFor="custom-slug-input">
-                <span className="flex items-center gap-2">
-                  <Link className="w-4 h-4 text-[var(--sg-text-muted)]" />
-                  Custom link
-                </span>
-                <span className="solid-glass-badge text-xs font-normal px-2 py-0.5 rounded shadow-xs">
-                  Optional
-                </span>
-              </label>
-
-              <div className="flex items-center rounded-md solid-glass-input overflow-hidden">
-                <input
-                  id="custom-slug-input"
-                  type="text"
-                  value={customSlug}
-                  onChange={(e) => setCustomSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
-                  placeholder="custom-link-name"
-                  className="w-full bg-transparent px-3.5 py-2.5 text-[var(--sg-input-text)] outline-none text-sm placeholder-[var(--sg-text-muted)] font-mono"
-                />
-                <button
-                  type="button"
-                  onClick={handleGenerateSlug}
-                  className="px-3.5 py-2.5 text-[var(--sg-text)] hover:bg-black/5 dark:hover:bg-white/10 border-l border-[var(--sg-panel-border)] transition cursor-pointer flex items-center gap-1.5 text-xs font-medium shrink-0"
-                  title="Generate random custom link"
-                >
-                  <Shuffle className="w-4 h-4 text-[var(--sg-text-muted)]" />
-                  <span>Generate</span>
-                </button>
-              </div>
-
-              {customSlug.trim() && (
-                <div className="flex items-center gap-1.5 text-xs mt-0.5">
-                  {renderSlugValidationStatus()}
-                </div>
-              )}
-            </div>
+            <SlugInputControl
+              customSlug={customSlug}
+              setCustomSlug={setCustomSlug}
+              onGenerateSlug={handleGenerateSlug}
+              slugValidation={slugValidation}
+            />
 
             {/* Expiration option */}
             <div className="flex flex-col gap-2">
@@ -339,8 +577,6 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
                     key={key}
                     type="button"
                     onClick={() => setVisibility(key as any)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setVisibility(key as any); }}
-                    tabIndex={0}
                     className={`py-2 px-1.5 rounded-md text-center transition cursor-pointer text-xs ${
                       visibility === key
                         ? 'solid-glass-btn-active text-[var(--sg-text)]'
@@ -360,67 +596,16 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
           </div>
         )}
 
-        {/* Password to access link */}
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-[var(--sg-text)] flex items-center justify-between" htmlFor="password-input">
-            <span className="flex items-center gap-2">
-              <Lock className="w-4 h-4 text-[var(--sg-text-muted)]" />
-              Password to access link
-            </span>
-            <span className="solid-glass-badge text-xs font-normal px-2 py-0.5 rounded shadow-xs">
-              Optional
-            </span>
-          </label>
-
-          <div className="flex items-center rounded-md solid-glass-input overflow-hidden">
-            <input
-              id="password-input"
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter or generate password..."
-              className="w-full bg-transparent px-3.5 py-2.5 text-[var(--sg-input-text)] outline-none text-sm placeholder-[var(--sg-text-muted)] font-mono"
-            />
-            {/* Password visibility toggle icon button */}
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="px-2.5 py-2 text-[var(--sg-text-muted)] hover:text-[var(--sg-text)] transition cursor-pointer flex items-center justify-center shrink-0"
-              title={showPassword ? 'Hide password' : 'Show password'}
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
-            >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-
-            {/* Passphrase Copy Button */}
-            {password && (
-              <button
-                type="button"
-                onClick={handleCopyPassphrase}
-                className="px-3 py-2.5 text-[var(--sg-text)] hover:bg-black/5 dark:hover:bg-white/10 border-l border-[var(--sg-panel-border)] transition cursor-pointer flex items-center justify-center text-xs font-medium shrink-0"
-                title={copiedPassphrase ? 'Password copied to clipboard' : 'Copy password to clipboard'}
-                aria-label={copiedPassphrase ? 'Password copied to clipboard' : 'Copy password to clipboard'}
-              >
-                {copiedPassphrase ? (
-                  <Check className="w-4 h-4 text-emerald-500" />
-                ) : (
-                  <Copy className="w-4 h-4 text-[var(--sg-text-muted)]" />
-                )}
-              </button>
-            )}
-
-            {/* Passphrase Generate Button */}
-            <button
-              type="button"
-              onClick={handleGeneratePassword}
-              className="px-3 py-2.5 text-[var(--sg-text)] hover:bg-black/5 dark:hover:bg-white/10 border-l border-[var(--sg-panel-border)] transition cursor-pointer flex items-center justify-center text-xs font-medium shrink-0"
-              title="Generate random secure password"
-              aria-label="Generate random secure password"
-            >
-              <Key className="w-4 h-4 text-[var(--sg-text-muted)]" />
-            </button>
-          </div>
-        </div>
+        {/* Password Protection Control */}
+        <PasswordInputControl
+          password={password}
+          setPassword={setPassword}
+          showPassword={showPassword}
+          setShowPassword={setShowPassword}
+          copiedPassphrase={copiedPassphrase}
+          onCopyPassphrase={handleCopyPassphrase}
+          onGeneratePassword={handleGeneratePassword}
+        />
 
         {/* Notice if creation requires signing in */}
         {pasteMode === 'database' && !user && allowAnonymousCreation === false && (
@@ -457,96 +642,30 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
         )}
 
         {/* Primary Action Button */}
-        {pasteMode === 'database' ? (
-          <button
-            type="button"
-            onClick={onSubmit}
-            disabled={
-              isSubmitting ||
-              (customSlug.trim() !== '' && slugValidation.valid === false)
-            }
-            className="w-full mt-2 py-2.5 px-4 rounded-md solid-glass-btn-primary text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>{editingPaste ? 'Saving sticky...' : 'Creating sticky...'}</span>
-              </>
-            ) : (
-              <span>{editingPaste ? 'Save sticky' : 'Create sticky'}</span>
-            )}
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={onStatelessSubmit}
-            disabled={hasStatelessImageConflict || isSubmitting}
-            className="w-full mt-2 py-2.5 px-4 rounded-md solid-glass-btn-primary text-sm font-medium transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <Zap className="w-4 h-4" />
-            <span>Generate stateless sticky</span>
-          </button>
-        )}
+        <SidebarSubmitActions
+          pasteMode={pasteMode}
+          onSubmit={onSubmit}
+          onStatelessSubmit={onStatelessSubmit}
+          isSubmitting={isSubmitting}
+          customSlug={customSlug}
+          slugValid={slugValidation.valid}
+          hasStatelessImageConflict={hasStatelessImageConflict}
+          editingPaste={editingPaste}
+        />
       </div>
 
       {/* Shareable Link Result Box */}
       {lastCreatedUrl && (
-        <div className="p-4 rounded-lg solid-glass-panel border-emerald-500/30 flex flex-col gap-3 shadow-xl">
-          <div className="flex items-center justify-between text-xs text-emerald-500 font-medium">
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4" />
-              {pasteMode === 'database' ? 'Sticky created' : 'Stateless sticky ready'}
-            </span>
-            <span className="text-[var(--sg-text-muted)] font-normal">Shareable link</span>
-          </div>
-
-          <div className="flex items-center gap-1.5 solid-glass-input rounded-md p-2">
-            <code className="text-[var(--sg-text)] flex-1 truncate text-xs select-all font-mono">
-              {fullShareUrl}
-            </code>
-            <button
-              type="button"
-              onClick={handleCopyLink}
-              className="px-2.5 py-1.5 rounded-md solid-glass-btn transition cursor-pointer flex items-center gap-1 text-xs font-medium"
-              title="Copy full link"
-            >
-              {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copiedLink ? 'Copied' : 'Copy'}</span>
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2 pt-1">
-            {lastCreatedSlug ? (
-              <button
-                type="button"
-                onClick={() => onNavigate(`/p/${lastCreatedSlug}`)}
-                className="flex-1 py-2 px-3 rounded-md solid-glass-btn-primary text-center transition flex items-center justify-center gap-1.5 text-xs font-medium cursor-pointer"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>Open View</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => onNavigate(lastCreatedUrl)}
-                className="flex-1 py-2 px-3 rounded-md solid-glass-btn-primary text-center transition flex items-center justify-center gap-1.5 text-xs font-medium cursor-pointer"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>Open Link</span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={() => setQrModalOpen(true)}
-              className="py-2 px-3 rounded-md solid-glass-btn text-center transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
-              title="Show QR Code"
-            >
-              <QrCode className="w-3.5 h-3.5" />
-              <span>QR</span>
-            </button>
-          </div>
-        </div>
+        <SidebarShareableResult
+          pasteMode={pasteMode}
+          lastCreatedUrl={lastCreatedUrl}
+          lastCreatedSlug={lastCreatedSlug}
+          fullShareUrl={fullShareUrl}
+          copiedLink={copiedLink}
+          onCopyLink={handleCopyLink}
+          onNavigate={onNavigate}
+          onOpenQr={() => setQrModalOpen(true)}
+        />
       )}
 
       {/* QR Code Modal */}

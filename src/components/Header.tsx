@@ -75,26 +75,6 @@ export const Header: React.FC<HeaderProps> = ({
   // User dropdown menu state
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
-  const registerModalRef = React.useRef<HTMLDialogElement>(null);
-  const settingsModalRef = React.useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    if (!registerModalRef.current) return;
-    if (showRegisterModal) {
-      registerModalRef.current.showModal();
-    } else {
-      registerModalRef.current.close();
-    }
-  }, [showRegisterModal]);
-
-  useEffect(() => {
-    if (!settingsModalRef.current) return;
-    if (showSettingsModal) {
-      settingsModalRef.current.showModal();
-    } else {
-      settingsModalRef.current.close();
-    }
-  }, [showSettingsModal]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -257,7 +237,7 @@ export const Header: React.FC<HeaderProps> = ({
                   Shareable Stickies
                 </span>
                 <span className="text-xs font-mono px-2 py-0.5 rounded-md solid-glass-badge font-normal">
-                  v0.3.4
+                  v0.3.5
                 </span>
                 <span className="hidden sm:inline-block text-[var(--sg-text-muted)] font-mono text-xs opacity-60">•</span>
                 <span className="hidden sm:inline-block text-xs font-mono text-[var(--sg-text-muted)] font-normal">
@@ -453,20 +433,17 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Requirement 12: Registration Confirmation Modal with Password Match & Warning */}
       {showRegisterModal && typeof document !== 'undefined' && createPortal(
-        <dialog
-          ref={registerModalRef}
-          role="dialog"
-          tabIndex={0}
-          onClick={(e) => { if (e.target === e.currentTarget) setShowRegisterModal(false); }}
-          onKeyDown={(e) => { if (e.key === 'Escape') setShowRegisterModal(false); }}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm text-sm"
-        >
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
-            className="w-full max-w-md rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm text-sm">
+          <button
+            type="button"
+            aria-label="Close registration modal"
+            onClick={() => setShowRegisterModal(false)}
+            className="fixed inset-0 bg-black/60 cursor-default border-0 p-0 m-0 w-full h-full"
+          />
+          <dialog
+            open
+            aria-label="Confirm Account Registration"
+            className="relative z-10 w-full max-w-md rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--sg-panel-border)]">
               <div className="flex items-center gap-2 text-[var(--sg-text)] font-semibold text-base">
@@ -549,27 +526,24 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               </div>
             </form>
-          </div>
-        </dialog>,
+          </dialog>
+        </div>,
         document.body
       )}
 
       {/* Account Settings Modal (Password Change) */}
       {showSettingsModal && user && typeof document !== 'undefined' && createPortal(
-        <dialog
-          ref={settingsModalRef}
-          role="dialog"
-          tabIndex={0}
-          onClick={(e) => { if (e.target === e.currentTarget) setShowSettingsModal(false); }}
-          onKeyDown={(e) => { if (e.key === 'Escape') setShowSettingsModal(false); }}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm text-sm"
-        >
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); }}
-            className="w-full max-w-md rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm text-sm">
+          <button
+            type="button"
+            aria-label="Close account settings modal"
+            onClick={() => setShowSettingsModal(false)}
+            className="fixed inset-0 bg-black/60 cursor-default border-0 p-0 m-0 w-full h-full"
+          />
+          <dialog
+            open
+            aria-label="Account Settings"
+            className="relative z-10 w-full max-w-md rounded-lg solid-glass-panel p-5 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--sg-panel-border)]">
               <div className="flex items-center gap-2 text-[var(--sg-text)] font-semibold text-base">
@@ -705,8 +679,8 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
             </form>
-          </div>
-        </dialog>,
+          </dialog>
+        </div>,
         document.body
       )}
 

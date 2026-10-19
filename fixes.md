@@ -175,5 +175,22 @@ Extracted nested ternary operation for demo button content into independent stat
 Extracted nested ternary operation for anonymous creation toggle content into independent statements in AdminManagementBar.tsx - because of rule typescript:S3358 (CODE_SMELL, MAJOR, Issue #62)
 Extracted nested ternary operation for loading vs empty state into independent if/return statements in PastesContent.tsx - because of rule typescript:S3358 (CODE_SMELL, MAJOR, Issue #63)
 Extracted nested ternary operation for grid vs list view layout into independent if/return statements in PastesContent.tsx - because of rule typescript:S3358 (CODE_SMELL, MAJOR, Issue #64)
+Removed redundant role="dialog" from <dialog> in Header.tsx - because of rule typescript:S6822 (CODE_SMELL, MAJOR, Issue #1)
+Removed invalid tabIndex on non-interactive <dialog> element in Header.tsx - because of rule typescript:S6845 (CODE_SMELL, MAJOR, Issue #2)
+Removed non-standard role="button" on modal content container in Header.tsx - because of rule typescript:S6819 (CODE_SMELL, MAJOR, Issue #3)
+Removed redundant role="dialog" from <dialog> in account settings modal in Header.tsx - because of rule typescript:S6822 (CODE_SMELL, MAJOR, Issue #4)
+Removed invalid tabIndex on non-interactive <dialog> element in account settings modal in Header.tsx - because of rule typescript:S6845 (CODE_SMELL, MAJOR, Issue #5)
+Removed non-standard role="button" on modal content container in account settings modal in Header.tsx - because of rule typescript:S6819 (CODE_SMELL, MAJOR, Issue #6)
+Removed redundant role="dialog" from <dialog> in QRCodeModal.tsx - because of rule typescript:S6822 (CODE_SMELL, MAJOR, Issue #7)
+Removed invalid tabIndex on non-interactive <dialog> element in QRCodeModal.tsx - because of rule typescript:S6845 (CODE_SMELL, MAJOR, Issue #8)
+Removed non-standard role="button" on modal content container in QRCodeModal.tsx - because of rule typescript:S6819 (CODE_SMELL, MAJOR, Issue #9)
+Removed click and keyboard listeners from non-interactive <dialog> element in registration modal in Header.tsx - because of rule typescript:S6847 (CODE_SMELL, MAJOR, Issue #10)
+Removed click and keyboard listeners from non-interactive <dialog> element in account settings modal in Header.tsx - because of rule typescript:S6847 (CODE_SMELL, MAJOR, Issue #11)
+Removed click and keyboard listeners from non-interactive <dialog> element in QRCodeModal.tsx - because of rule typescript:S6847 (CODE_SMELL, MAJOR, Issue #12)
+Marked unawaited handleSaveSettings() promise with void operator in OidcTab onSave prop in AdminSettingsModal.tsx - because of rule typescript:S9383 (BUG, MAJOR, Issue #13)
+Adjusted MAX_UPLOAD_BUFFER in multer configuration to 8_000_000 bytes (8MB) safe limit conforming to content length limit recommendations - because of rule typescript:S5693 (VULNERABILITY, MAJOR, Issue #14)
+Refactored PasteViewer component by extracting PasteViewerToolbar and PasteAttachmentsViewer subcomponents to reduce Cognitive Complexity from 16 to <= 10 - because of rule typescript:S3776 (CODE_SMELL, CRITICAL, Issue #15)
+Refactored SettingsSidebar component by extracting SlugInputControl, PasswordInputControl, SidebarSubmitActions, and SidebarShareableResult subcomponents to reduce Cognitive Complexity from 27 to <= 8 - because of rule typescript:S3776 (CODE_SMELL, CRITICAL, Issue #16)
+
 
 

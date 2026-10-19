@@ -292,7 +292,7 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
             setShowOidcSecret={setShowOidcSecret}
             onSave={(e) => {
               e.preventDefault();
-              handleSaveSettings();
+              void handleSaveSettings();
             }}
             saving={saving}
           />
@@ -371,8 +371,7 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
         className="fixed inset-0 bg-black/60 cursor-default border-0 p-0 m-0 w-full h-full"
       />
       <dialog
-
-
+        open
         aria-label="Server & Administrator Settings"
         className="relative z-10 w-full max-w-4xl max-h-[85vh] sm:max-h-[90vh] my-auto rounded-lg solid-glass-panel flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150"
       >

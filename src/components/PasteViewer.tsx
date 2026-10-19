@@ -56,6 +56,165 @@ const EXTENSION_MAP: Record<string, string> = {
   plaintext: 'txt',
 };
 
+interface PasteViewerToolbarProps {
+  canShareLink: boolean;
+  copiedLink: boolean;
+  onCopyLink: () => void;
+  onOpenQr: () => void;
+  copied: boolean;
+  onCopyContent: () => void;
+  onDownload: () => void;
+  onEditPaste?: ((paste: Paste) => void) | undefined;
+  paste: Paste;
+  isStateless: boolean;
+}
+
+const PasteViewerToolbar: React.FC<PasteViewerToolbarProps> = ({
+  canShareLink,
+  copiedLink,
+  onCopyLink,
+  onOpenQr,
+  copied,
+  onCopyContent,
+  onDownload,
+  onEditPaste,
+  paste,
+  isStateless,
+}) => {
+  const linkTitle = copiedLink ? 'Link Copied' : 'Copy Link';
+  const copyTitle = copied ? 'Copied' : 'Copy Content';
+
+  return (
+    <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+      {canShareLink && (
+        <button
+          type="button"
+          onClick={onCopyLink}
+          className="p-2 rounded-md solid-glass-btn text-[var(--sg-btn-text)] transition cursor-pointer flex items-center justify-center"
+          title={linkTitle}
+          aria-label={linkTitle}
+        >
+          {copiedLink ? <Check className="w-[18px] h-[18px] text-emerald-500" /> : <LinkIcon className="w-[18px] h-[18px] text-[var(--sg-text-muted)]" />}
+        </button>
+      )}
+
+      <button
+        type="button"
+        onClick={onOpenQr}
+        className="p-2 rounded-md solid-glass-btn text-[var(--sg-btn-text)] transition cursor-pointer flex items-center justify-center"
+        title="QR Code"
+        aria-label="QR Code"
+      >
+        <QrCode className="w-[18px] h-[18px] text-[var(--sg-text-muted)]" />
+      </button>
+
+      <button
+        type="button"
+        onClick={onCopyContent}
+        className="p-2 rounded-md solid-glass-btn text-[var(--sg-btn-text)] transition cursor-pointer flex items-center justify-center"
+        title={copyTitle}
+        aria-label={copyTitle}
+      >
+        {copied ? <Check className="w-[18px] h-[18px] text-emerald-500" /> : <Copy className="w-[18px] h-[18px] text-[var(--sg-text-muted)]" />}
+      </button>
+
+      <button
+        type="button"
+        onClick={onDownload}
+        className="p-2 rounded-md solid-glass-btn text-[var(--sg-btn-text)] transition cursor-pointer flex items-center justify-center"
+        title="Download"
+        aria-label="Download"
+      >
+        <Download className="w-[18px] h-[18px] text-[var(--sg-text-muted)]" />
+      </button>
+
+      {onEditPaste && (
+        <button
+          type="button"
+          onClick={() => onEditPaste(paste)}
+          className="p-2 rounded-md solid-glass-btn text-[var(--sg-btn-text)] transition cursor-pointer flex items-center justify-center"
+          title="Edit"
+          aria-label="Edit"
+        >
+          <Edit3 className="w-[18px] h-[18px] text-[var(--sg-text-muted)]" />
+        </button>
+      )}
+
+      {!isStateless && (
+        <a
+          href={`/raw/${paste.slug}`}
+          target="_blank"
+          rel="noreferrer"
+          className="p-2 rounded-md solid-glass-btn text-[var(--sg-btn-text)] transition flex items-center justify-center"
+          title="Raw Contents"
+          aria-label="Raw Contents"
+        >
+          <FileCode className="w-[18px] h-[18px] text-[var(--sg-text-muted)]" />
+        </a>
+      )}
+    </div>
+  );
+};
+
+interface PasteAttachmentsViewerProps {
+  attachments?: Paste['attachments'];
+  onSelectImage: (url: string) => void;
+}
+
+const PasteAttachmentsViewer: React.FC<PasteAttachmentsViewerProps> = ({
+  attachments,
+  onSelectImage,
+}) => {
+  if (!attachments || attachments.length === 0) return null;
+  const countLabel = attachments.length === 1 ? 'file' : 'files';
+
+  return (
+    <div className="p-4 rounded-lg solid-glass-panel font-mono text-xs">
+      <div className="flex items-center justify-between mb-3 text-[var(--sg-text)] font-semibold">
+        <span className="flex items-center gap-2">
+          <ImageIcon className="w-4 h-4 text-[var(--sg-text-muted)]" />
+          Attachments ({attachments.length} {countLabel})
+        </span>
+        <span className="text-xs text-[var(--sg-text-muted)] font-medium">Stored attachments</span>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        {attachments.map((att) => (
+          <div
+            key={att.id}
+            className="group relative p-2 rounded-md solid-glass-btn flex flex-col gap-2 overflow-hidden transition"
+          >
+            <button
+              type="button"
+              onClick={() => onSelectImage(att.url)}
+              className="w-full text-left cursor-pointer focus:outline-none flex flex-col gap-2"
+            >
+              <img
+                src={att.url}
+                alt={att.originalName}
+                className="w-full h-28 object-cover group-hover:scale-105 transition rounded"
+              />
+              <span className="truncate text-[var(--sg-text)] font-medium block" title={att.originalName}>
+                {att.originalName}
+              </span>
+            </button>
+            <div className="flex items-center justify-end">
+              <a
+                href={att.url}
+                download={att.originalName}
+                className="p-1 rounded-md solid-glass-btn text-[var(--sg-text-muted)] hover:text-[var(--sg-text)] transition cursor-pointer"
+                title="Download image"
+              >
+                <Download className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export const PasteViewer: React.FC<PasteViewerProps> = ({
   slug,
   statelessData,
@@ -413,70 +572,18 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
         </div>
 
         {/* Action Controls: Right aligned, icon-only buttons with tooltips, 2-4px bigger icons */}
-        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-          {/* Copy Link button: available for public and unlisted stickies, hidden for private stickies */}
-          {canShareLink && (
-            <button
-              onClick={handleCopyLink}
-              className="p-2 rounded-md solid-glass-btn text-[var(--sg-btn-text)] transition cursor-pointer flex items-center justify-center"
-              title={copiedLink ? 'Link Copied' : 'Copy Link'}
-              aria-label={copiedLink ? 'Link Copied' : 'Copy Link'}
-            >
-              {copiedLink ? <Check className="w-[18px] h-[18px] text-emerald-500" /> : <LinkIcon className="w-[18px] h-[18px] text-[var(--sg-text-muted)]" />}
-            </button>
-          )}
-
-          <button
-            onClick={() => setQrModalOpen(true)}
-            className="p-2 rounded-md solid-glass-btn text-[var(--sg-btn-text)] transition cursor-pointer flex items-center justify-center"
-            title="QR Code"
-            aria-label="QR Code"
-          >
-            <QrCode className="w-[18px] h-[18px] text-[var(--sg-text-muted)]" />
-          </button>
-
-          <button
-            onClick={handleCopy}
-            className="p-2 rounded-md solid-glass-btn text-[var(--sg-btn-text)] transition cursor-pointer flex items-center justify-center"
-            title={copied ? 'Copied' : 'Copy Content'}
-            aria-label={copied ? 'Copied' : 'Copy Content'}
-          >
-            {copied ? <Check className="w-[18px] h-[18px] text-emerald-500" /> : <Copy className="w-[18px] h-[18px] text-[var(--sg-text-muted)]" />}
-          </button>
-
-          <button
-            onClick={handleDownload}
-            className="p-2 rounded-md solid-glass-btn text-[var(--sg-btn-text)] transition cursor-pointer flex items-center justify-center"
-            title="Download"
-            aria-label="Download"
-          >
-            <Download className="w-[18px] h-[18px] text-[var(--sg-text-muted)]" />
-          </button>
-
-          {onEditPaste && (
-            <button
-              onClick={() => onEditPaste(paste)}
-              className="p-2 rounded-md solid-glass-btn text-[var(--sg-btn-text)] transition cursor-pointer flex items-center justify-center"
-              title="Edit"
-              aria-label="Edit"
-            >
-              <Edit3 className="w-[18px] h-[18px] text-[var(--sg-text-muted)]" />
-            </button>
-          )}
-
-          {!statelessData && (
-            <a
-              href={`/raw/${paste.slug}`}
-              target="_blank"
-              rel="noreferrer"
-              className="p-2 rounded-md solid-glass-btn text-[var(--sg-btn-text)] transition flex items-center justify-center"
-              title="Raw Contents"
-              aria-label="Raw Contents"
-            >
-              <FileCode className="w-[18px] h-[18px] text-[var(--sg-text-muted)]" />
-            </a>
-          )}
-        </div>
+        <PasteViewerToolbar
+          canShareLink={canShareLink}
+          copiedLink={copiedLink}
+          onCopyLink={handleCopyLink}
+          onOpenQr={() => setQrModalOpen(true)}
+          copied={copied}
+          onCopyContent={handleCopy}
+          onDownload={handleDownload}
+          onEditPaste={onEditPaste}
+          paste={paste}
+          isStateless={Boolean(statelessData)}
+        />
       </div>
 
       {/* Client-side decryption form â€” shown to ALL users (owner and non-owner) */}
@@ -535,51 +642,10 @@ export const PasteViewer: React.FC<PasteViewerProps> = ({
       )}
 
       {/* Attachments Section */}
-      {paste.attachments && paste.attachments.length > 0 && (
-        <div className="p-4 rounded-lg solid-glass-panel font-mono text-xs">
-          <div className="flex items-center justify-between mb-3 text-[var(--sg-text)] font-semibold">
-            <span className="flex items-center gap-2">
-              <ImageIcon className="w-4 h-4 text-[var(--sg-text-muted)]" />
-              Attachments ({paste.attachments.length} {paste.attachments.length === 1 ? 'file' : 'files'})
-            </span>
-            <span className="text-xs text-[var(--sg-text-muted)] font-medium">Stored attachments</span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {paste.attachments.map((att) => (
-              <div
-                key={att.id}
-                className="group relative p-2 rounded-md solid-glass-btn flex flex-col gap-2 overflow-hidden transition"
-              >
-                <button
-                  type="button"
-                  onClick={() => setSelectedImage(att.url)}
-                  className="w-full text-left cursor-pointer focus:outline-none flex flex-col gap-2"
-                >
-                  <img
-                    src={att.url}
-                    alt={att.originalName}
-                    className="w-full h-28 object-cover group-hover:scale-105 transition rounded"
-                  />
-                  <span className="truncate text-[var(--sg-text)] font-medium block" title={att.originalName}>
-                    {att.originalName}
-                  </span>
-                </button>
-                <div className="flex items-center justify-end">
-                  <a
-                    href={att.url}
-                    download={att.originalName}
-                    className="p-1 rounded-md solid-glass-btn text-[var(--sg-text-muted)] hover:text-[var(--sg-text)] transition cursor-pointer"
-                    title="Download image"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <PasteAttachmentsViewer
+        attachments={paste.attachments}
+        onSelectImage={(url) => setSelectedImage(url)}
+      />
 
       {/* Fullscreen Image Modal */}
       {selectedImage && (

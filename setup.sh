@@ -1,7 +1,7 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # ==============================================================================
 # Shareable Stickies â€” Installation & Administration Setup Script
-# Version: 0.1.0
+# Version: 0.3.5
 # ==============================================================================
 
 set -e
@@ -16,7 +16,7 @@ DIM="\033[2m"
 
 echo -e "${CYAN}${BOLD}"
 echo "======================================================================"
-echo "          Shareable Stickies â€” Admin & Server Setup (v 0.1.0)"
+echo "          Shareable Stickies — Admin & Server Setup (v 0.3.5)"
 echo "======================================================================"
 echo -e "${RESET}"
 echo -e "This wizard configures your installation settings either interactively"
