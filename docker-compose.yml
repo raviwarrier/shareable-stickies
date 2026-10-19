@@ -12,6 +12,9 @@ services:
       - NODE_ENV=production
       - STORAGE_DRIVER=local
       - ALLOW_PUBLIC_PASTES=true
+      - ALLOW_ANONYMOUS_CREATION=true
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=admin
       - ENCRYPTION_SECRET=change-this-production-encryption-secret-32-bytes
       - UPLOAD_DIR=/app/uploads
       - DATA_DIR=/app/data

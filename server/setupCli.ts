@@ -11,7 +11,7 @@ export function runCliSync() {
   const validTheme = ['dark', 'light', 'sepia'].includes(defaultMode) ? defaultMode : 'dark';
 
   // 2. Allow public creation of stickies
-  const allowPublic = process.env.ALLOW_ANONYMOUS_CREATION === 'true' || process.env.ALLOW_PUBLIC_STICKIES === 'true';
+  const allowPublic = process.env.ALLOW_ANONYMOUS_CREATION === 'true' || process.env.ALLOW_PUBLIC_STICKIES === 'true' || process.env.ALLOW_PUBLIC_PASTES === 'true';
 
   // 3. Storage Driver
   const storageDriver = (process.env.STORAGE_DRIVER || 'local') as 'local' | 'cloudinary' | 's3';

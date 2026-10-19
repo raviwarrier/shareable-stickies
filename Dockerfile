@@ -6,8 +6,8 @@ RUN addgroup --system --gid 1001 nodejs && \
 
 WORKDIR /app
 
-# Install build dependencies if needed
-RUN apk add --no-cache libc6-compat
+# Install build dependencies, libc6-compat, and su-exec for privilege dropping
+RUN apk add --no-cache libc6-compat su-exec
 
 # Copy package manifest and install all dependencies
 COPY package.json ./
@@ -23,18 +23,14 @@ COPY --chown=nodejs:nodejs tsconfig.json ./
 COPY --chown=nodejs:nodejs index.html ./
 COPY --chown=nodejs:nodejs .env.example ./
 
+# Copy entrypoint script to fix volume permissions and drop privileges at runtime
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Build client and create data directories in a single layer
 RUN npm run build && \
     mkdir -p /app/data /app/uploads && \
-    chown -R nodejs:nodejs /app/data /app/uploads
-
-# Create entrypoint script that fixes volume ownership at runtime.
-# Volumes mounted from the host may have different ownership than nodejs,
-# so we chown at startup before dropping privileges.
-RUN echo '#!/bin/sh\nchown -R nodejs:nodejs /app/data /app/uploads 2>/dev/null || true\nexec su -s /bin/sh nodejs -c "exec node /app/node_modules/.bin/tsx /app/server.ts"' > /usr/local/bin/start.sh && \
-    chmod +x /usr/local/bin/start.sh
-
-USER root
+    chown -R nodejs:nodejs /app
 
 EXPOSE 3000
 
@@ -43,4 +39,5 @@ ENV PORT=3000
 
 WORKDIR /app
 
-CMD ["sh", "/usr/local/bin/start.sh"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["node", "node_modules/.bin/tsx", "server.ts"]

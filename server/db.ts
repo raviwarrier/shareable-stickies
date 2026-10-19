@@ -910,7 +910,7 @@ class Database {
   public getAppSettings(): AppSettingsRecord {
     if (!this.schema.appSettings) {
       const defaultMode = (process.env.DEFAULT_THEME || process.env.THEME_MODE || 'dark') as 'dark' | 'light' | 'sepia';
-      const allowAnon = process.env.ALLOW_ANONYMOUS_CREATION === 'true' || process.env.ALLOW_PUBLIC_STICKIES === 'true';
+      const allowAnon = process.env.ALLOW_ANONYMOUS_CREATION === 'true' || process.env.ALLOW_PUBLIC_STICKIES === 'true' || process.env.ALLOW_PUBLIC_PASTES === 'true';
       const storageDrv = (process.env.STORAGE_DRIVER || 'local') as 'local' | 'cloudinary' | 's3';
 
       this.schema.appSettings = {
@@ -951,7 +951,7 @@ class Database {
     const settings = this.schema.appSettings!;
     settings.defaultTheme ??= (process.env.DEFAULT_THEME || process.env.THEME_MODE || 'dark') as 'dark' | 'light' | 'sepia';
     settings.defaultTheme = ['dark', 'light', 'sepia'].includes(settings.defaultTheme) ? settings.defaultTheme : 'dark';
-    settings.allowAnonymousCreation ??= process.env.ALLOW_ANONYMOUS_CREATION === 'true' || process.env.ALLOW_PUBLIC_STICKIES === 'true';
+    settings.allowAnonymousCreation ??= process.env.ALLOW_ANONYMOUS_CREATION === 'true' || process.env.ALLOW_PUBLIC_STICKIES === 'true' || process.env.ALLOW_PUBLIC_PASTES === 'true';
     settings.storageDriver ??= (process.env.STORAGE_DRIVER || 'local') as 'local' | 'cloudinary' | 's3';
     settings.storageDriver = ['local', 'cloudinary', 's3'].includes(settings.storageDriver) ? settings.storageDriver : 'local';
     settings.cloudinaryConfig ??= {
