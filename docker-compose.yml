@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   shareable-stickies:
     image: ghcr.io/raviwarrier/shareable-stickies:latest
