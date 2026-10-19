@@ -191,6 +191,10 @@ Marked unawaited handleSaveSettings() promise with void operator in OidcTab onSa
 Adjusted MAX_UPLOAD_BUFFER in multer configuration to 8_000_000 bytes (8MB) safe limit conforming to content length limit recommendations - because of rule typescript:S5693 (VULNERABILITY, MAJOR, Issue #14)
 Refactored PasteViewer component by extracting PasteViewerToolbar and PasteAttachmentsViewer subcomponents to reduce Cognitive Complexity from 16 to <= 10 - because of rule typescript:S3776 (CODE_SMELL, CRITICAL, Issue #15)
 Refactored SettingsSidebar component by extracting SlugInputControl, PasswordInputControl, SidebarSubmitActions, and SidebarShareableResult subcomponents to reduce Cognitive Complexity from 27 to <= 8 - because of rule typescript:S3776 (CODE_SMELL, CRITICAL, Issue #16)
+Merged consecutive RUN instructions in Dockerfile into a single cached build layer - because of rule docker:S7031 (CODE_SMELL, MINOR, Issue #1)
+Copied package-lock.json and used npm ci to lock resolved dependency versions in Dockerfile - because of rule docker:S8543 (VULNERABILITY, MAJOR, Issue #2)
+Removed redundant undefined type from optional onEditPaste prop in PasteViewerToolbarProps in PasteViewer.tsx - because of rule typescript:S4782 (CODE_SMELL, MAJOR, Issue #3)
+
 
 
 

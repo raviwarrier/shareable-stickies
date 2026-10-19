@@ -64,7 +64,7 @@ interface PasteViewerToolbarProps {
   copied: boolean;
   onCopyContent: () => void;
   onDownload: () => void;
-  onEditPaste?: ((paste: Paste) => void) | undefined;
+  onEditPaste?: (paste: Paste) => void;
   paste: Paste;
   isStateless: boolean;
 }

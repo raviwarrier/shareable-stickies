@@ -9,9 +9,9 @@ WORKDIR /app
 # Install build dependencies, libc6-compat, and su-exec for privilege dropping
 RUN apk add --no-cache libc6-compat su-exec
 
-# Copy package manifest and install all dependencies
-COPY package.json ./
-RUN npm install --legacy-peer-deps --ignore-scripts
+# Copy package manifests and install all dependencies using lockfile
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts
 
 # Copy only necessary files
 COPY --chown=nodejs:nodejs package.json ./
@@ -25,13 +25,13 @@ COPY --chown=nodejs:nodejs .env.example ./
 
 # Copy entrypoint script to fix volume permissions and drop privileges at runtime
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh && \
-    chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Build client and create data directories in a single layer
-RUN npm run build && \
+# Normalize entrypoint line endings, build client, and create data directories in a single layer
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh && \
+    chmod +x /usr/local/bin/docker-entrypoint.sh && \
+    npm run build && \
     mkdir -p /app/data /app/uploads && \
-    chown -R nodejs:nodejs /app
+    chown -R nodejs:nodejs /app/data /app/uploads /app/dist
 
 EXPOSE 3000
 
