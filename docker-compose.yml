@@ -2,9 +2,7 @@ version: '3.8'
 
 services:
   shareable-stickies:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/raviwarrier/shareable-stickies:latest
     container_name: shareable-stickies
     restart: unless-stopped
     ports:
