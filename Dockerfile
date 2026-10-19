@@ -25,7 +25,8 @@ COPY --chown=nodejs:nodejs .env.example ./
 
 # Copy entrypoint script to fix volume permissions and drop privileges at runtime
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh && \
+    chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Build client and create data directories in a single layer
 RUN npm run build && \

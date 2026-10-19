@@ -45,7 +45,7 @@ function sanitizeSlug(value: unknown): string {
 
 const app = express();
 app.disable('x-powered-by');
-const PORT = process.env.PORT || 3000;
+const PORT = Number.parseInt(String(process.env.PORT || '3000'), 10);
 const storageDriver = getStorageDriver();
 
 // Increase JSON payload limit for large code snippets
@@ -749,7 +749,7 @@ async function startServer() {
   }
 
   await new Promise<void>((resolve) => {
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`[Shareable Stickies] Server running on port ${PORT} (NODE_ENV=${process.env.NODE_ENV || 'development'})`);
       resolve();
     });
