@@ -137,7 +137,12 @@ class Database {
         if (!this.schema.users) this.schema.users = {};
         if (!this.schema.sessions) this.schema.sessions = {};
       } catch (err) {
-        console.error('[DB] Failed to parse existing database file, initializing fresh:', err);
+        console.error('[DB] Failed to parse existing database file, preserving backup and initializing fresh:', err);
+        try {
+          fs.copyFileSync(this.dbFile, `${this.dbFile}.backup.${Date.now()}`);
+        } catch {
+          // Ignore backup creation failure
+        }
         this.persist();
       }
     } else {
@@ -156,6 +161,17 @@ class Database {
     const adminPass = process.env.ADMIN_PASSWORD;
     const adminUser = (process.env.ADMIN_USERNAME || 'admin').trim();
     const isProduction = process.env.NODE_ENV === 'production';
+    const forceReset = process.env.FORCE_RESET_ADMIN === 'true' || process.env.RESET_ADMIN_CREDENTIALS === 'true';
+
+    // Check if an administrator already exists in the database
+    const existingAdmin = Object.values(this.schema.users).find(
+      (u) => u.role === 'admin' || u.username.toLowerCase() === adminUser.toLowerCase()
+    );
+
+    // If an administrator already exists, NEVER overwrite existing credentials on restart/update
+    if (existingAdmin && !forceReset) {
+      return;
+    }
 
     // In production, only seed if ADMIN_PASSWORD is set
     // In dev, provide default admin user if no admin exists yet
@@ -163,10 +179,6 @@ class Database {
     if (!effectivePass) {
       return;
     }
-
-    const existingAdmin = Object.values(this.schema.users).find(
-      (u) => u.role === 'admin' || u.username.toLowerCase() === adminUser.toLowerCase()
-    );
 
     if (!existingAdmin) {
       const { hash, salt } = hashPassword(effectivePass);
@@ -181,15 +193,16 @@ class Database {
       };
       this.persist();
       console.log(`[DB] Initialized administrator user (${adminUser})`);
-    } else if (adminPass) {
-      // If ADMIN_PASSWORD explicitly provided in env, ensure credentials match
+    } else if (forceReset && adminPass) {
+      // ONLY overwrite if emergency force-reset flag is explicitly provided
       const { hash, salt } = hashPassword(adminPass);
       existingAdmin.passwordHash = hash;
       existingAdmin.passwordSalt = salt;
-      if (adminUser && existingAdmin.username !== adminUser) {
+      if (adminUser) {
         existingAdmin.username = adminUser;
       }
       this.persist();
+      console.log(`[DB] Administrator credentials reset for (${adminUser}) via FORCE_RESET_ADMIN`);
     }
   }
 
