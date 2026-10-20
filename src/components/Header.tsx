@@ -237,7 +237,7 @@ export const Header: React.FC<HeaderProps> = ({
                   Shareable Stickies
                 </span>
                 <span className="text-xs font-mono px-2 py-0.5 rounded-md solid-glass-badge font-normal">
-                  v0.3.5
+                  v0.3.6
                 </span>
                 <span className="hidden sm:inline-block text-[var(--sg-text-muted)] font-mono text-xs opacity-60">•</span>
                 <span className="hidden sm:inline-block text-xs font-mono text-[var(--sg-text-muted)] font-normal">

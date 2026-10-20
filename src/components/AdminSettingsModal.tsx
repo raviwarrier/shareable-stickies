@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { User, AdminSystemSettings, AppTheme, StorageDriverType, FileTypeCategories } from '../types';
-import { getAdminSettings, updateAdminSettings, changeAdminCredentials, testAdminStorage } from '../api';
+import { getAdminSettings, updateAdminSettings, changeAdminCredentials, testAdminStorage, getAdminStats, toggleAdminDemo } from '../api';
 import { Shield, X, Loader2, Check, AlertTriangle } from 'lucide-react';
 import { AdminSidebar, TabType } from './admin/AdminSidebar';
 import { ThemeTab } from './admin/ThemeTab';
@@ -9,6 +9,7 @@ import { PermissionsTab } from './admin/PermissionsTab';
 import { OidcTab } from './admin/OidcTab';
 import { StorageTab } from './admin/StorageTab';
 import { AttachmentsTab } from './admin/AttachmentsTab';
+import { DemoTab } from './admin/DemoTab';
 import { AccountTab } from './admin/AccountTab';
 
 interface AdminSettingsModalProps {
@@ -78,7 +79,11 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
   });
   const [maxFileSizeMB, setMaxFileSizeMB] = useState(15);
 
-  // 6. Admin Account Credentials
+  // 6. Demo Mode Options
+  const [demoEnabled, setDemoEnabled] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
+
+  // 7. Admin Account Credentials
   const [adminUsername, setAdminUsername] = useState(currentUser.username);
   const [currentAdminPassword, setCurrentAdminPassword] = useState('');
   const [newAdminPassword, setNewAdminPassword] = useState('');
@@ -93,8 +98,11 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
     setStorageTestResult(null);
     setLoading(true);
 
-    getAdminSettings()
-      .then((data: AdminSystemSettings) => {
+    Promise.all([
+      getAdminSettings(),
+      getAdminStats().catch(() => null),
+    ])
+      .then(([data, stats]) => {
         if (data.defaultTheme) setSelectedTheme(data.defaultTheme);
         setAllowPublicCreation(!!data.allowAnonymousCreation);
         if (data.storageDriver) setStorageDriver(data.storageDriver);
@@ -122,12 +130,38 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
         if (data.maxFileSize) {
           setMaxFileSizeMB(Math.round(data.maxFileSize / (1024 * 1024)) || 15);
         }
+        if (stats) {
+          setDemoEnabled(!!stats.demoEnabled);
+        }
       })
       .finally(() => setLoading(false))
       .catch((err) => {
         setStatusMessage({ type: 'error', text: err.message || 'Failed to fetch settings' });
       });
   }, [isOpen]);
+
+  // Handle Demo Mode Toggle
+  const handleToggleDemo = async () => {
+    setDemoLoading(true);
+    setStatusMessage(null);
+    try {
+      const nextState = await toggleAdminDemo(!demoEnabled);
+      setDemoEnabled(nextState);
+      setStatusMessage({
+        type: 'success',
+        text: nextState
+          ? 'Demo Mode enabled: 5 sample stickies and demo_user account are now active.'
+          : 'Demo Mode disabled: Sample stickies and demo_user account have been removed.',
+      });
+    } catch (err: any) {
+      setStatusMessage({
+        type: 'error',
+        text: err.message || 'Failed to toggle demo mode',
+      });
+    } finally {
+      setDemoLoading(false);
+    }
+  };
 
   // Handle Save System Settings
   const handleSaveSettings = async () => {
@@ -338,6 +372,14 @@ export const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
             setMaxFileSizeMB={setMaxFileSizeMB}
             onSave={handleSaveSettings}
             saving={saving}
+          />
+        );
+      case 'demo':
+        return (
+          <DemoTab
+            demoEnabled={demoEnabled}
+            onToggleDemo={handleToggleDemo}
+            loading={demoLoading}
           />
         );
       case 'account':

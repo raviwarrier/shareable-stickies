@@ -5,25 +5,16 @@ import {
   deletePaste,
   togglePinPaste,
   recordCopy,
-  getAdminStats,
-  toggleAdminDemo,
-  getAdminOidcConfig,
-  saveAdminOidcConfig,
-  getAdminSettings,
-  updateAdminSettings,
 } from '../api';
-import { AdminSettingsModal } from './AdminSettingsModal';
-import { AdminManagementBar } from './dashboard/AdminManagementBar';
 import { PastesContent } from './dashboard/PastesContent';
-import { OidcModal, OidcConfigState } from './dashboard/OidcModal';
 import {
   FileText,
   Search,
-  ExternalLink,
   PlusCircle,
   LayoutGrid,
   List,
   ArrowUpDown,
+  ExternalLink,
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -41,36 +32,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onEditPa
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  // Admin stats
-  const [adminStats, setAdminStats] = useState<{
-    totalPastes: number;
-    totalUsers: number;
-    demoEnabled: boolean;
-  } | null>(null);
-  const [adminLoading, setAdminLoading] = useState(false);
-
-  // Server Admin Settings
-  const [showAdminSettingsModal, setShowAdminSettingsModal] = useState(false);
-  const [adminSettings, setAdminSettings] = useState<{ allowAnonymousCreation: boolean }>({
-    allowAnonymousCreation: false,
-  });
-  const [settingsLoading, setSettingsLoading] = useState(false);
-  const [settingsNotification, setSettingsNotification] = useState<string | null>(null);
-
-  // OIDC Configuration modal & state
-  const [showOidcModal, setShowOidcModal] = useState(false);
-  const [oidcConfig, setOidcConfig] = useState<OidcConfigState>({
-    enabled: false,
-    providerName: 'Custom OIDC / SSO',
-    issuerUrl: '',
-    clientId: '',
-    clientSecret: '',
-    allowedDomains: '*',
-    requireOidcOnly: false,
-  });
-  const [oidcSaving, setOidcSaving] = useState(false);
-  const [oidcSaveSuccess, setOidcSaveSuccess] = useState(false);
-
   const fetchPastes = async () => {
     setLoading(true);
     try {
@@ -83,25 +44,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onEditPa
     }
   };
 
-  const fetchAdminData = async () => {
-    if (user.role !== 'admin') return;
-    try {
-      const [stats, oidc, settings] = await Promise.all([
-        getAdminStats(),
-        getAdminOidcConfig().catch(() => null),
-        getAdminSettings().catch(() => ({ allowAnonymousCreation: false })),
-      ]);
-      setAdminStats(stats);
-      if (oidc) setOidcConfig(oidc);
-      if (settings) setAdminSettings(settings);
-    } catch (err) {
-      console.error('Failed to load admin data:', err);
-    }
-  };
-
   useEffect(() => {
     void fetchPastes();
-    void fetchAdminData();
   }, [user.id, user.role]);
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
@@ -142,58 +86,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onEditPa
     setTimeout(() => setCopiedSlug(null), 2000);
   };
 
-  const handleToggleDemoUser = async () => {
-    if (!adminStats) return;
-    setAdminLoading(true);
-    try {
-      const newState = await toggleAdminDemo(!adminStats.demoEnabled);
-      setAdminStats((prev) => (prev ? { ...prev, demoEnabled: newState } : null));
-      await fetchPastes();
-    } catch (err) {
-      console.error('Failed to toggle demo user:', err);
-    } finally {
-      setAdminLoading(false);
-    }
-  };
-
-  const handleToggleAnonymousCreation = async () => {
-    setSettingsLoading(true);
-    try {
-      const updated = await updateAdminSettings({
-        allowAnonymousCreation: !adminSettings.allowAnonymousCreation,
-      });
-      setAdminSettings(updated);
-      setSettingsNotification(
-        updated.allowAnonymousCreation
-          ? 'Sticky creation without signing in is now ALLOWED on this server.'
-          : 'Sticky creation without signing in is now DISABLED (Sign-in required).'
-      );
-      setTimeout(() => setSettingsNotification(null), 4000);
-    } catch (err: any) {
-      console.error('Failed to update admin settings:', err);
-      setSettingsNotification('Failed to update server setting.');
-      setTimeout(() => setSettingsNotification(null), 4000);
-    } finally {
-      setSettingsLoading(false);
-    }
-  };
-
-  const handleSaveOidc = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setOidcSaving(true);
-    setOidcSaveSuccess(false);
-    try {
-      const saved = await saveAdminOidcConfig(oidcConfig);
-      setOidcConfig(saved);
-      setOidcSaveSuccess(true);
-      setTimeout(() => setOidcSaveSuccess(false), 3000);
-    } catch (err) {
-      console.error('Failed to save OIDC config:', err);
-    } finally {
-      setOidcSaving(false);
-    }
-  };
-
   const filteredAndSorted = useMemo(() => {
     const q = search.toLowerCase();
     const result = pastes.filter((p) => {
@@ -228,21 +120,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onEditPa
 
   return (
     <div className="max-w-7xl mx-auto flex flex-col gap-4 text-sm w-full">
-      {/* Admin Management Section (Visible only to Admin users) */}
-      {user.role === 'admin' && adminStats && (
-        <AdminManagementBar
-          adminStats={adminStats}
-          adminLoading={adminLoading}
-          adminSettings={adminSettings}
-          settingsLoading={settingsLoading}
-          settingsNotification={settingsNotification}
-          onOpenAdminSettings={() => setShowAdminSettingsModal(true)}
-          onOpenOidcModal={() => setShowOidcModal(true)}
-          onToggleDemoUser={handleToggleDemoUser}
-          onToggleAnonymousCreation={handleToggleAnonymousCreation}
-        />
-      )}
-
       {/* Main Pastes Header Toolbar */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-3.5 rounded-lg solid-glass-panel shadow-md">
         <div className="flex items-center justify-between md:justify-start gap-4">
@@ -349,34 +226,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onEditPa
         onTogglePin={handleTogglePin}
         onDelete={handleDelete}
       />
-
-      {/* OIDC Configuration Modal */}
-      <OidcModal
-        isOpen={showOidcModal}
-        onClose={() => setShowOidcModal(false)}
-        oidcConfig={oidcConfig}
-        setOidcConfig={setOidcConfig}
-        oidcSaving={oidcSaving}
-        oidcSaveSuccess={oidcSaveSuccess}
-        onSave={handleSaveOidc}
-      />
-
-      {/* Admin Settings Modal */}
-      {user.role === 'admin' && (
-        <AdminSettingsModal
-          isOpen={showAdminSettingsModal}
-          onClose={() => setShowAdminSettingsModal(false)}
-          currentUser={user}
-          onUserUpdate={() => {}}
-          currentTheme={((typeof document !== 'undefined' && document.documentElement.dataset.theme) as any) || 'dark'}
-          onThemeChange={(newTheme) => {
-            if (typeof document !== 'undefined') {
-              document.documentElement.dataset.theme = newTheme;
-              localStorage.setItem('app-theme', newTheme);
-            }
-          }}
-        />
-      )}
     </div>
   );
 };

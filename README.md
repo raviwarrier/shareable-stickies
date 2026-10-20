@@ -1,4 +1,4 @@
-# Shareable Stickies v0.3.5
+# Shareable Stickies v0.3.6
 
 Self-hostable modern pastebin for you to use or share with others.
 

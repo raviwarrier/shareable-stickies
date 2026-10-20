@@ -1,7 +1,7 @@
 import React from 'react';
-import { Sun, Lock, Globe, HardDrive, Paperclip, KeyRound } from 'lucide-react';
+import { Sun, Lock, Globe, HardDrive, Paperclip, Sparkles, KeyRound } from 'lucide-react';
 
-export type TabType = 'theme' | 'permissions' | 'oidc' | 'storage' | 'attachments' | 'account';
+export type TabType = 'theme' | 'permissions' | 'oidc' | 'storage' | 'attachments' | 'demo' | 'account';
 
 interface AdminSidebarProps {
   activeTab: TabType;
@@ -15,7 +15,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onSelectT
     { id: 'oidc', label: '3. OIDC Settings', icon: <Globe className="w-3.5 h-3.5" /> },
     { id: 'storage', label: '4. Storage Driver', icon: <HardDrive className="w-3.5 h-3.5" /> },
     { id: 'attachments', label: '5. Attachments', icon: <Paperclip className="w-3.5 h-3.5" /> },
-    { id: 'account', label: '6. Admin Account', icon: <KeyRound className="w-3.5 h-3.5" /> },
+    { id: 'demo', label: '6. Demo Options', icon: <Sparkles className="w-3.5 h-3.5" /> },
+    { id: 'account', label: '7. Admin Account', icon: <KeyRound className="w-3.5 h-3.5" /> },
   ];
 
   return (
